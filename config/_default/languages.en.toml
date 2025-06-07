@@ -1,0 +1,22 @@
+languageCode = "en"
+languageName = ""
+weight = 1
+title = "welcome to my crib"
+
+[params]
+  displayName = "English"
+  isoCode = "en"
+  rtl = false
+  dateFormat = "2 January 2006"
+  logo = "img/blowfish_logo_transparent.png"
+
+[params.author]
+  name = "murfalo"
+  email = "howdy@murfalo.com"
+  image = "img/murfalo.png"
+  headline = "check out my cool stuff"
+  bio = "check out my cool stuff"
+  links = [
+    { email = "mailto:howdy@murfalo.com" },
+    { github = "https://github.com/murfalo" },
+  ]
