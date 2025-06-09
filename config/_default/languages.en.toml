@@ -20,5 +20,6 @@ title = "welcome to my crib"
     { github = "https://github.com/murfalo" },
     { linkedin = "https://www.linkedin.com/in/murfalo" },
     { twitter = "https://twitter.com/mvrfalo" },
+    { bluesky = "https://bsky.app/profile/murfalo.bsky.social" },
     { instagram = "https://instagram.com/mvrfalo" },
   ]
