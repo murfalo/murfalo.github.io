@@ -18,4 +18,7 @@ title = "welcome to my crib"
   links = [
     { email = "mailto:howdy@murfalo.com" },
     { github = "https://github.com/murfalo" },
+    { linkedin = "https://www.linkedin.com/in/murfalo" },
+    { twitter = "https://twitter.com/mvrfalo" },
+    { instagram = "https://instagram.com/mvrfalo" },
   ]
