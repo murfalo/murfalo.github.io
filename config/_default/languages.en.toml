@@ -18,6 +18,7 @@ title = "welcome to my crib"
   links = [
     { email = "mailto:howdy@murfalo.com" },
     { github = "https://github.com/murfalo" },
+    { google-scholar = "https://scholar.google.com/citations?user=zC_z7igAAAAJ" },
     { linkedin = "https://www.linkedin.com/in/murfalo" },
     { twitter = "https://twitter.com/mvrfalo" },
     { bluesky = "https://bsky.app/profile/murfalo.bsky.social" },
