@@ -37,6 +37,11 @@
       box-sizing: border-box;
     }
 
+    ::selection {
+      background: rgba(139, 92, 246, 0.35);
+      color: #e4e4e7;
+    }
+
     :root {
       --color-bg: #18181b;
       --color-text: #e4e4e7;
@@ -156,6 +161,25 @@
       height: 26px;
       fill: currentColor;
     }
+
+    .bubble-hint {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: var(--color-muted);
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .bubble-hint.visible {
+      opacity: 0.5;
+    }
   </style>
 </head>
 <body>
@@ -171,7 +195,7 @@
   </svg>
 
   <main class="container">
-    <img class="avatar" src="img/murfalo.png" alt="murfalo — dog in purple hoodie and sunglasses" width="160" height="160">
+    <img class="avatar" src="img/murfalo.png" alt="murfalo — dog in purple hoodie and sunglasses" width="160" height="160" draggable="false">
     <h1>murfalo</h1>
     <p class="bio">check out my <span id="typed"></span><span class="cursor"></span></p>
 
@@ -212,6 +236,7 @@
       </a>
     </nav>
   </main>
+  <p class="bubble-hint" id="bubble-hint">oh no! you popped my bubble</p>
 
   <script>
     // --- Typewriter ---
@@ -286,7 +311,9 @@
       let time = 0;
       let cursorRadius = 52;
       let cursorRadiusVel = 0;
-      let dispersionMult = 4.0;
+      let hasPopped = false;
+      let hasReassembled = false;
+      let popFrame = 0;
 
       function resize() {
         W = canvas.width = window.innerWidth;
@@ -456,8 +483,8 @@
           const dist = 80 + Math.random() * 60;
           blobs[i].x = cx + Math.cos(angle) * dist;
           blobs[i].y = cy + Math.sin(angle) * dist;
-          blobs[i].vx = Math.cos(angle) * 0.15;
-          blobs[i].vy = Math.sin(angle) * 0.15;
+          blobs[i].vx = 0;
+          blobs[i].vy = 0;
         }
       }
 
@@ -466,9 +493,51 @@
         // Decay mouse speed each frame
         mouseSpeed *= 0.9;
 
-        // Decay initial dispersion boost
-        if (dispersionMult > 1.0) dispersionMult *= 0.995;
-        else dispersionMult = 1.0;
+        // Pop when mouse enters the bubble cluster or on first click
+        if (!hasPopped) {
+          let shouldPop = false;
+          if (mx !== null) {
+            const dx = mx - W / 2;
+            const dy = my - H / 2;
+            if (Math.sqrt(dx * dx + dy * dy) < 250) shouldPop = true;
+          }
+          if (mouseDown) shouldPop = true;
+          if (shouldPop) {
+            hasPopped = true;
+            popFrame = time;
+            for (let i = 0; i < blobs.length; i++) {
+              const b = blobs[i];
+              const angle = (i / blobs.length) * Math.PI * 2 + (Math.random() - 0.5) * 1.5;
+              const speed = 5 + Math.random() * 3;
+              b.vx = Math.cos(angle) * speed;
+              b.vy = Math.sin(angle) * speed;
+            }
+            // Show hint
+            const hint = document.getElementById("bubble-hint");
+            hint.textContent = "oh no! you popped my bubble";
+            hint.classList.add("visible");
+            setTimeout(() => hint.classList.remove("visible"), 4000);
+          }
+        }
+
+        // Detect blobs reassembled (wait 180 frames after pop so they spread first)
+        if (hasPopped && !hasReassembled && time - popFrame > 180) {
+          let cx = 0, cy = 0;
+          for (let i = 0; i < blobs.length; i++) { cx += blobs[i].x; cy += blobs[i].y; }
+          cx /= blobs.length; cy /= blobs.length;
+          let allClose = true;
+          for (let i = 0; i < blobs.length; i++) {
+            const dx = blobs[i].x - cx, dy = blobs[i].y - cy;
+            if (Math.sqrt(dx * dx + dy * dy) > 150) { allClose = false; break; }
+          }
+          if (allClose) {
+            hasReassembled = true;
+            const hint = document.getElementById("bubble-hint");
+            hint.textContent = "aw, you put it back :)";
+            hint.classList.add("visible");
+            setTimeout(() => hint.classList.remove("visible"), 4000);
+          }
+        }
 
         // Spring-animate cursor metaball radius (boing on click)
         const targetRadius = mouseDown ? 90 : 52;
@@ -482,8 +551,8 @@
           const b = blobs[i];
 
           // sinusoidal drift (slow, languid)
-          b.vx += Math.sin(time * b.freqX + b.phaseX) * 0.0004;
-          b.vy += Math.cos(time * b.freqY + b.phaseY) * 0.0004;
+          b.vx += Math.sin(time * b.freqX + b.phaseX) * 0.0002;
+          b.vy += Math.cos(time * b.freqY + b.phaseY) * 0.0002;
 
           // buoyancy
           b.vy += b.buoyancy;
@@ -531,40 +600,43 @@
               const speedMult = 1.0 + mouseSpeed * 0.15;
               const invSq = 1.0 / (dist * dist);
               const taper = 1.0 - dist / 600;
-              const force = invSq * 7000 * speedMult * taper * dispersionMult;
+              const force = invSq * 7000 * speedMult * taper;
               b.vx += (dx / dist) * force;
               b.vy += (dy / dist) * force;
             }
           }
 
-          // wall springs — nonlinear (quadratic) so blobs can smoosh into walls
-          // weak at first contact, strong at deep penetration
+          // wall springs — soft gooey pushback, allows smooshing into walls
           if (b.x < b.r) {
-            const pen = (b.r - b.x) / b.r; // 0..~1.5 normalized penetration
-            b.vx += pen * pen * 0.03;
+            const pen = (b.r - b.x) / b.r;
+            b.vx += pen * 0.15;
+            b.vx *= 0.92;
           }
           if (b.x > W - b.r) {
             const pen = (b.x - (W - b.r)) / b.r;
-            b.vx -= pen * pen * 0.03;
+            b.vx -= pen * 0.15;
+            b.vx *= 0.92;
           }
           if (b.y < b.r) {
             const pen = (b.r - b.y) / b.r;
-            b.vy += pen * pen * 0.03;
+            b.vy += pen * 0.15;
+            b.vy *= 0.92;
           }
           if (b.y > H - b.r) {
             const pen = (b.y - (H - b.r)) / b.r;
-            b.vy -= pen * pen * 0.03;
+            b.vy -= pen * 0.15;
+            b.vy *= 0.92;
           }
 
           // damping (lower = slower, more viscous)
-          b.vx *= 0.993;
-          b.vy *= 0.993;
+          b.vx *= 0.984;
+          b.vy *= 0.984;
 
-          // clamp speed (low for languid movement)
+          // clamp speed
           const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-          if (speed > 1.5) {
-            b.vx = (b.vx / speed) * 1.5;
-            b.vy = (b.vy / speed) * 1.5;
+          if (speed > 5) {
+            b.vx = (b.vx / speed) * 5;
+            b.vy = (b.vy / speed) * 5;
           }
 
           b.x += b.vx;
