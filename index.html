@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>murfalo</title>
+  <title>welcome to my crib</title>
   <meta name="description" content="check out my cool stuff">
   <meta name="author" content="murfalo">
 
@@ -53,13 +53,37 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-image: radial-gradient(ellipse at center, rgba(139, 92, 246, 0.06) 0%, transparent 70%);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Noise texture overlay */
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      opacity: 0.035;
+    }
+
+    /* Lava lamp canvas */
+    .lava-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      cursor: grab;
+    }
+
+    .lava-canvas:active {
+      cursor: grabbing;
     }
 
     .container {
       text-align: center;
       padding: 2rem;
       animation: fadeIn 0.6s ease-out;
+      position: relative;
+      z-index: 1;
     }
 
     @keyframes fadeIn {
@@ -94,6 +118,20 @@
       color: var(--color-muted);
     }
 
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.1em;
+      background: var(--color-primary);
+      margin-left: 1px;
+      vertical-align: text-bottom;
+      animation: blink 0.6s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
     nav {
       margin-top: 1.75rem;
       display: flex;
@@ -121,10 +159,21 @@
   </style>
 </head>
 <body>
+  <!-- Lava lamp canvas -->
+  <canvas class="lava-canvas" id="lava"></canvas>
+
+  <!-- Noise texture -->
+  <svg class="noise" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+    <filter id="noiseFilter">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+    </filter>
+    <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+  </svg>
+
   <main class="container">
     <img class="avatar" src="img/murfalo.png" alt="murfalo — dog in purple hoodie and sunglasses" width="160" height="160">
     <h1>murfalo</h1>
-    <p class="bio">check out my cool stuff</p>
+    <p class="bio">check out my <span id="typed"></span><span class="cursor"></span></p>
 
     <nav aria-label="Social links">
       <!-- Email -->
@@ -163,5 +212,394 @@
       </a>
     </nav>
   </main>
+
+  <script>
+    // --- Typewriter ---
+    (() => {
+      const words = [
+        "molecules", "proteins", "RNA", "simulations", "amino acids",
+        "force fields", "PDBs", "molecular dynamics", "nucleotides",
+        "Terraria mods", "repos", "commits", "side quests", "loot",
+        "inventory", "patch notes", "sludge", "slop",
+        "cool stuff", "dog pics", "drip", "hoodie collection", "sunglasses",
+        "crib", "vibes", "hot takes", "links", "fits", "socials",
+        "Boston accent", "British accent", "Debbie Marks impression",
+        "cozy corner", "manifesto", "mixtape", "magnum opus",
+        "search history", "bookmarks",
+        "wares", "lore", "origin story", "final form", "spaghetti code",
+        "Bankai", "fireball jutsu", "power level", "stand",
+        "stone world", "domain expansion", "equivalent exchange", "bizarre adventure",
+        "crystal structures", "peptides", "nucleic acids"
+      ];
+
+      const el = document.getElementById("typed");
+      let queue = [];
+      let i = 0;
+
+      function shuffle(arr) {
+        for (let j = arr.length - 1; j > 0; j--) {
+          const k = Math.floor(Math.random() * (j + 1));
+          [arr[j], arr[k]] = [arr[k], arr[j]];
+        }
+        return arr;
+      }
+
+      function next() {
+        if (queue.length === 0) queue = shuffle([...words]);
+        return queue.pop();
+      }
+
+      function typeWord(word) {
+        if (i <= word.length) {
+          el.textContent = word.slice(0, i);
+          i++;
+          setTimeout(() => typeWord(word), 55);
+        } else {
+          setTimeout(() => deleteWord(word), 1500);
+        }
+      }
+
+      function deleteWord(word) {
+        if (i > 0) {
+          i--;
+          el.textContent = word.slice(0, i);
+          setTimeout(() => deleteWord(word), 35);
+        } else {
+          setTimeout(() => { i = 0; typeWord(next()); }, 300);
+        }
+      }
+
+      typeWord(next());
+    })();
+
+    // --- Interactive lava lamp (WebGL metaball shader) ---
+    (() => {
+      const canvas = document.getElementById("lava");
+      const gl = canvas.getContext("webgl");
+      if (!gl) { console.warn("WebGL not available — lava lamp disabled"); return; }
+
+      let W, H;
+      let mx = null, my = null;
+      let prevMx = null, prevMy = null;
+      let mouseSpeed = 0;
+      let mouseDown = false;
+      let time = 0;
+      let cursorRadius = 52;
+      let cursorRadiusVel = 0;
+
+      function resize() {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+        gl.viewport(0, 0, W, H);
+      }
+      resize();
+      window.addEventListener("resize", resize);
+
+      window.addEventListener("mousemove", e => {
+        if (mx !== null) {
+          const dx = e.clientX - mx;
+          const dy = e.clientY - my;
+          mouseSpeed = Math.sqrt(dx * dx + dy * dy);
+        }
+        prevMx = mx; prevMy = my;
+        mx = e.clientX; my = e.clientY;
+      });
+      window.addEventListener("touchmove", e => {
+        const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
+        if (mx !== null) {
+          const dx = tx - mx, dy = ty - my;
+          mouseSpeed = Math.sqrt(dx * dx + dy * dy);
+        }
+        prevMx = mx; prevMy = my;
+        mx = tx; my = ty;
+      }, { passive: true });
+      window.addEventListener("mouseleave", () => { mx = null; my = null; mouseSpeed = 0; mouseDown = false; });
+      window.addEventListener("mousedown", () => { mouseDown = true; });
+      window.addEventListener("mouseup", () => { mouseDown = false; });
+      window.addEventListener("touchstart", () => { mouseDown = true; }, { passive: true });
+      window.addEventListener("touchend", () => { mouseDown = false; });
+
+      // --- Shaders ---
+      const vsSource = `
+        attribute vec2 a_pos;
+        void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+      `;
+
+      const fsSource = `
+        precision mediump float;
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform vec3 u_blobs[9];
+        uniform float u_pulse[9];
+
+        float hash(vec2 p) {
+          return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+        }
+
+        void main() {
+          vec2 uv = gl_FragCoord.xy;
+          float field = 0.0;
+
+          for (int i = 0; i < 9; i++) {
+            vec2 delta = uv - u_blobs[i].xy;
+            float r = u_blobs[i].z;
+            float distSq = dot(delta, delta);
+            field += (r * r) / max(distSq, 1.0);
+          }
+
+          vec3 bg = vec3(0.094, 0.094, 0.106);
+          float threshold = 0.65;
+
+          // Distance from the iso-surface
+          float dist = abs(field - threshold);
+
+          // Sharp neon edge line
+          float edge = exp(-dist * 35.0);
+
+          // Tight glow halo for good contrast against dark bg
+          float glow = exp(-dist * 14.0) * 0.3;
+
+          // Dark tinted interior (subtle)
+          float interior = smoothstep(threshold - 0.02, threshold + 0.02, field);
+
+          // Neon colors
+          vec3 neonBright = vec3(0.75, 0.40, 1.0);
+          vec3 neonGlow = vec3(0.50, 0.20, 0.85);
+          vec3 interiorColor = vec3(0.12, 0.06, 0.22);
+
+          vec3 col = bg;
+          col = mix(col, interiorColor, interior * 0.35);
+          col += neonGlow * glow;
+          col += neonBright * edge * 1.5;
+
+          // Subtle pulsing brightness on outline
+          float pulseBright = 0.9 + 0.1 * sin(u_time * 2.0);
+          col *= mix(1.0, pulseBright, edge);
+
+          // Dithering
+          float dither = (hash(gl_FragCoord.xy + u_time) - 0.5) / 255.0 * 2.0;
+          col += dither;
+
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `;
+
+      function compileShader(src, type) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          console.error(gl.getShaderInfoLog(s));
+          return null;
+        }
+        return s;
+      }
+
+      const vs = compileShader(vsSource, gl.VERTEX_SHADER);
+      const fs = compileShader(fsSource, gl.FRAGMENT_SHADER);
+      const prog = gl.createProgram();
+      gl.attachShader(prog, vs);
+      gl.attachShader(prog, fs);
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+        console.error(gl.getProgramInfoLog(prog));
+        return;
+      }
+      gl.useProgram(prog);
+
+      // Fullscreen quad
+      const buf = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+      const aPos = gl.getAttribLocation(prog, "a_pos");
+      gl.enableVertexAttribArray(aPos);
+      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+      // Uniform locations
+      const uRes = gl.getUniformLocation(prog, "u_resolution");
+      const uTime = gl.getUniformLocation(prog, "u_time");
+      const uBlobs = [];
+      const uPulse = [];
+      for (let i = 0; i < 9; i++) {
+        uBlobs.push(gl.getUniformLocation(prog, `u_blobs[${i}]`));
+        uPulse.push(gl.getUniformLocation(prog, `u_pulse[${i}]`));
+      }
+
+      // --- Blob physics: 3 large + 5 medium = 8 blobs ---
+      function makeBlob(rMin, rMax) {
+        return {
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          r: rMin + Math.random() * (rMax - rMin),
+          vx: (Math.random() - 0.5) * 0.15,
+          vy: (Math.random() - 0.5) * 0.15,
+          phaseX: Math.random() * Math.PI * 2,
+          phaseY: Math.random() * Math.PI * 2,
+          freqX: 0.00015 + Math.random() * 0.00025,
+          freqY: 0.00015 + Math.random() * 0.00025,
+          buoyancy: (Math.random() - 0.5) * 0.002,
+          pulsePhase: Math.random() * Math.PI * 2,
+          pulseFreq: 0.004 + Math.random() * 0.006,
+        };
+      }
+      const blobs = [
+        ...Array.from({length: 3}, () => makeBlob(90, 128)),   // large
+        ...Array.from({length: 5}, () => makeBlob(49, 83)),    // medium
+      ];
+      // Start blobs in a ring around center card, with slow outward drift
+      {
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        for (let i = 0; i < blobs.length; i++) {
+          const angle = (i / blobs.length) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+          const dist = 80 + Math.random() * 60;
+          blobs[i].x = cx + Math.cos(angle) * dist;
+          blobs[i].y = cy + Math.sin(angle) * dist;
+          blobs[i].vx = Math.cos(angle) * 0.15;
+          blobs[i].vy = Math.sin(angle) * 0.15;
+        }
+      }
+
+      function update() {
+        time++;
+        // Decay mouse speed each frame
+        mouseSpeed *= 0.9;
+
+        // Spring-animate cursor metaball radius (boing on click)
+        const targetRadius = mouseDown ? 90 : 52;
+        const springK = 0.12;
+        const springDamp = 0.55;
+        cursorRadiusVel += (targetRadius - cursorRadius) * springK;
+        cursorRadiusVel *= springDamp;
+        cursorRadius += cursorRadiusVel;
+
+        for (let i = 0; i < blobs.length; i++) {
+          const b = blobs[i];
+
+          // sinusoidal drift (slow, languid)
+          b.vx += Math.sin(time * b.freqX + b.phaseX) * 0.0004;
+          b.vy += Math.cos(time * b.freqY + b.phaseY) * 0.0004;
+
+          // buoyancy
+          b.vy += b.buoyancy;
+
+          // blob-blob interactions
+          for (let j = i + 1; j < blobs.length; j++) {
+            const o = blobs[j];
+            const dx = o.x - b.x;
+            const dy = o.y - b.y;
+            const distSq = dx * dx + dy * dy;
+            const dist = Math.sqrt(distSq);
+            const combinedR = b.r + o.r;
+
+            if (dist < 1) continue;
+
+            if (dist < combinedR * 0.5) {
+              const force = 0.003 * (1 - dist / (combinedR * 0.5));
+              const fx = (dx / dist) * force;
+              const fy = (dy / dist) * force;
+              b.vx -= fx; b.vy -= fy;
+              o.vx += fx; o.vy += fy;
+            } else if (dist < combinedR * 3.0) {
+              const force = 0.004 * (dist - combinedR * 0.5) / (combinedR * 2.5);
+              const fx = (dx / dist) * force;
+              const fy = (dy / dist) * force;
+              b.vx += fx; b.vy += fy;
+              o.vx -= fx; o.vy -= fy;
+            }
+          }
+
+          // Mouse interaction — repel on hover, suck on click
+          if (mx !== null) {
+            const dx = b.x - mx;
+            const dy = b.y - my;
+            const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 50);
+            if (mouseDown) {
+              // Click-to-suck: strong pull toward cursor
+              if (dist < 900) {
+                const taper = 1.0 - dist / 900;
+                const force = taper * taper * 0.7;
+                b.vx -= (dx / dist) * force;
+                b.vy -= (dy / dist) * force;
+              }
+            } else if (dist < 600) {
+              const speedMult = 1.0 + mouseSpeed * 0.15;
+              const invSq = 1.0 / (dist * dist);
+              const taper = 1.0 - dist / 600;
+              const force = invSq * 7000 * speedMult * taper;
+              b.vx += (dx / dist) * force;
+              b.vy += (dy / dist) * force;
+            }
+          }
+
+          // wall springs — nonlinear (quadratic) so blobs can smoosh into walls
+          // weak at first contact, strong at deep penetration
+          if (b.x < b.r) {
+            const pen = (b.r - b.x) / b.r; // 0..~1.5 normalized penetration
+            b.vx += pen * pen * 0.03;
+          }
+          if (b.x > W - b.r) {
+            const pen = (b.x - (W - b.r)) / b.r;
+            b.vx -= pen * pen * 0.03;
+          }
+          if (b.y < b.r) {
+            const pen = (b.r - b.y) / b.r;
+            b.vy += pen * pen * 0.03;
+          }
+          if (b.y > H - b.r) {
+            const pen = (b.y - (H - b.r)) / b.r;
+            b.vy -= pen * pen * 0.03;
+          }
+
+          // damping (lower = slower, more viscous)
+          b.vx *= 0.993;
+          b.vy *= 0.993;
+
+          // clamp speed (low for languid movement)
+          const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+          if (speed > 1.5) {
+            b.vx = (b.vx / speed) * 1.5;
+            b.vy = (b.vy / speed) * 1.5;
+          }
+
+          b.x += b.vx;
+          b.y += b.vy;
+
+          // Allow center past edge by up to half radius (wall smoosh)
+          b.x = Math.max(-b.r * 0.5, Math.min(W + b.r * 0.5, b.x));
+          b.y = Math.max(-b.r * 0.5, Math.min(H + b.r * 0.5, b.y));
+        }
+      }
+
+      function draw() {
+        gl.uniform2f(uRes, W, H);
+        gl.uniform1f(uTime, time * 0.01);
+
+        for (let i = 0; i < 8; i++) {
+          const b = blobs[i];
+          gl.uniform3f(uBlobs[i], b.x, H - b.y, b.r);
+          const pulse = 0.85 + 0.15 * Math.sin(time * b.pulseFreq + b.pulsePhase);
+          gl.uniform1f(uPulse[i], pulse);
+        }
+
+        // Mouse cursor metaball (index 8) — spring-animated radius
+        if (mx !== null) {
+          gl.uniform3f(uBlobs[8], mx, H - my, cursorRadius);
+        } else {
+          gl.uniform3f(uBlobs[8], 0.0, 0.0, 0.0);
+        }
+        gl.uniform1f(uPulse[8], 1.0);
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+
+      function loop() {
+        update();
+        draw();
+        requestAnimationFrame(loop);
+      }
+      loop();
+    })();
+  </script>
 </body>
 </html>
