@@ -286,6 +286,7 @@
       let time = 0;
       let cursorRadius = 52;
       let cursorRadiusVel = 0;
+      let dispersionMult = 4.0;
 
       function resize() {
         W = canvas.width = window.innerWidth;
@@ -465,6 +466,10 @@
         // Decay mouse speed each frame
         mouseSpeed *= 0.9;
 
+        // Decay initial dispersion boost
+        if (dispersionMult > 1.0) dispersionMult *= 0.995;
+        else dispersionMult = 1.0;
+
         // Spring-animate cursor metaball radius (boing on click)
         const targetRadius = mouseDown ? 90 : 52;
         const springK = 0.12;
@@ -526,7 +531,7 @@
               const speedMult = 1.0 + mouseSpeed * 0.15;
               const invSq = 1.0 / (dist * dist);
               const taper = 1.0 - dist / 600;
-              const force = invSq * 7000 * speedMult * taper;
+              const force = invSq * 7000 * speedMult * taper * dispersionMult;
               b.vx += (dx / dist) * force;
               b.vy += (dy / dist) * force;
             }
