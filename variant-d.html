@@ -394,6 +394,7 @@
       let hasPopped = false;
       let popFrame = 0;
       let hasReassembled = false;
+      let reassembleHintShown = false;
 
       // Party mode
       let partyMode = false;
@@ -973,12 +974,12 @@
             if (idleMode) {
               if (blobs.length <= ORIGINAL_COUNT) {
                 hasReassembled = true;
-                showHint("ok I'm done, goodnight", 3);
+                if (!reassembleHintShown) { reassembleHintShown = true; showHint("ok I'm done, goodnight", 3); }
                 idleMode = false;
               }
             } else {
               hasReassembled = true;
-              showHint("aw, you put it back :)", 1);
+              if (!reassembleHintShown) { reassembleHintShown = true; showHint("aw, you put it back :)", 1); }
             }
           }
         }
