@@ -686,6 +686,7 @@
       let hintDisplayTimer = 0;
       let hintFadeTimer = 0;
       let hintCurrentPri = 99;
+      let socialHintActive = false;
 
       function showHint(text, pri) {
         if (pri === undefined) pri = 2;
@@ -703,8 +704,43 @@
         processHintQueue();
       }
 
+      function showSocialHint(text) {
+        socialHintActive = true;
+        clearTimeout(hintDisplayTimer);
+        clearTimeout(hintFadeTimer);
+        // Save the interrupted hint back to the front of the queue
+        if (hintState === "visible") {
+          hintQueue.unshift({text: hintEl.textContent, pri: hintCurrentPri});
+        }
+        hintState = "idle";
+        hintCurrentPri = 99;
+        if (hintEl.classList.contains("visible")) {
+          // Fade out current text first, then fade in new text
+          hintEl.classList.remove("visible");
+          hintFadeTimer = setTimeout(() => {
+            hintEl.textContent = text;
+            hintEl.classList.add("visible");
+          }, HINT_FADE_MS);
+        } else {
+          hintEl.textContent = text;
+          hintEl.classList.add("visible");
+        }
+      }
+
+      function hideSocialHint() {
+        socialHintActive = false;
+        hintEl.classList.remove("visible");
+        clearTimeout(hintFadeTimer);
+        hintFadeTimer = setTimeout(() => {
+          if (!socialHintActive) {
+            hintState = "idle";
+            processHintQueue();
+          }
+        }, HINT_FADE_MS);
+      }
+
       function processHintQueue() {
-        if (hintQueue.length === 0) return;
+        if (socialHintActive || hintQueue.length === 0) return;
         const fadeMs = HINT_FADE_MS;
 
         if (hintState === "idle") {
@@ -1291,7 +1327,9 @@
       };
       document.querySelectorAll("nav a").forEach(a => {
         const hint = socialHints[a.getAttribute("aria-label")];
-        if (hint) a.addEventListener("mouseenter", () => showHint(hint, 2));
+        if (!hint) return;
+        a.addEventListener("mouseenter", () => showSocialHint(hint));
+        a.addEventListener("mouseleave", hideSocialHint);
       });
     })();
   </script>
