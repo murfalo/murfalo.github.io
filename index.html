@@ -384,6 +384,7 @@
       let mx = null, my = null;
       let mouseSpeed = 0;
       let mouseDown = false;
+      let isTouch = false;
       let cursorRadius = CURSOR_R_REST;
       let cursorRadiusVel = 0;
       let cursorTrailX = null, cursorTrailY = null;
@@ -508,12 +509,13 @@
       window.addEventListener("mousedown", () => { mouseDown = true; recordInteraction(); });
       window.addEventListener("mouseup", () => { mouseDown = false; });
       window.addEventListener("touchstart", e => {
+        isTouch = true;
         mouseDown = true;
         const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
         mx = tx; my = ty;
         recordInteraction();
       }, { passive: true });
-      window.addEventListener("touchend", () => { mouseDown = false; });
+      window.addEventListener("touchend", () => { mouseDown = false; isTouch = false; });
 
       // Keydown for idle tracking
       window.addEventListener("keydown", () => { recordInteraction(); });
@@ -1108,7 +1110,7 @@
                 b.vx += (dx / dist) * force;
                 b.vy += (dy / dist) * force;
               }
-            } else if (mouseDown) {
+            } else if (mouseDown && !isTouch) {
               if (dist < MOUSE_REPEL_RANGE) {
                 const taper = 1.0 - dist / MOUSE_REPEL_RANGE;
                 const force = taper * taper * 0.7;
