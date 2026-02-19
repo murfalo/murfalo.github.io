@@ -1,5 +1,3 @@
-# murfalo's public website
+# murfalo.com
 
-Built with Hugo and Blowfish.  Stripped down `blowfish/exampleSite` from
-`https://github.com/nunocoracao/blowfish`.  GitHub pages Hugo integration from
-here: https://gohugo.io/host-and-deploy/host-on-github-pages/.
+Personal landing page. Pure static HTML/CSS with an interactive WebGL lava lamp background. Deployed to GitHub Pages on push to `main`.
