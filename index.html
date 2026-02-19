@@ -21,10 +21,10 @@
   <meta name="twitter:image" content="https://murfalo.com/img/murfalo.png">
 
   <!-- Favicons -->
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" href="/img/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#18181b">
 
@@ -76,6 +76,8 @@
     .lava-canvas {
       position: fixed;
       inset: 0;
+      width: 100%;
+      height: 100%;
       z-index: 0;
       cursor: grab;
     }
@@ -460,9 +462,12 @@
       ];
 
       function resize() {
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-        gl.viewport(0, 0, W, H);
+        const dpr = window.devicePixelRatio || 1;
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        gl.viewport(0, 0, canvas.width, canvas.height);
       }
       resize();
       window.addEventListener("resize", resize);
@@ -520,7 +525,7 @@
       `;
 
       const fsSource = `
-        precision mediump float;
+        precision highp float;
         uniform float u_time;
         uniform float u_hue;
         uniform vec3 u_blobs[64];
@@ -1183,6 +1188,7 @@
       }
 
       function draw() {
+        const dpr = window.devicePixelRatio || 1;
         gl.uniform1f(uTime, time * 0.01);
         gl.uniform1f(uHue, hueOffset);
 
@@ -1191,13 +1197,13 @@
 
         // Physics blobs
         for (let i = 0; i < blobs.length && slot < maxSlots - 2; i++) {
-          gl.uniform3f(uBlobs[slot], blobs[i].x, H - blobs[i].y, blobs[i].r);
+          gl.uniform3f(uBlobs[slot], blobs[i].x * dpr, (H - blobs[i].y) * dpr, blobs[i].r * dpr);
           slot++;
         }
 
         // Primary cursor metaball
         if (mx !== null) {
-          gl.uniform3f(uBlobs[slot], mx, H - my, cursorRadius);
+          gl.uniform3f(uBlobs[slot], mx * dpr, (H - my) * dpr, cursorRadius * dpr);
         } else {
           gl.uniform3f(uBlobs[slot], 0.0, 0.0, 0.0);
         }
@@ -1207,7 +1213,7 @@
         if (mx !== null && cursorTrailX !== null) {
           const stretch = Math.min(mouseSpeed / 12, 1.0);
           const trailR = cursorRadius * 0.55 * stretch;
-          gl.uniform3f(uBlobs[slot], cursorTrailX, H - cursorTrailY, trailR);
+          gl.uniform3f(uBlobs[slot], cursorTrailX * dpr, (H - cursorTrailY) * dpr, trailR * dpr);
         } else {
           gl.uniform3f(uBlobs[slot], 0.0, 0.0, 0.0);
         }
