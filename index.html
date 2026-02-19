@@ -714,8 +714,8 @@
         }
         hintState = "idle";
         hintCurrentPri = 99;
-        if (hintEl.classList.contains("visible")) {
-          // Fade out current text first, then fade in new text
+        // Fade out first if anything is still visible (including mid-fade)
+        if (parseFloat(getComputedStyle(hintEl).opacity) > 0.01) {
           hintEl.classList.remove("visible");
           hintFadeTimer = setTimeout(() => {
             hintEl.textContent = text;
