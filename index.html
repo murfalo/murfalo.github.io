@@ -940,7 +940,7 @@
             for (let i = 0; i < blobs.length; i++) {
               const b = blobs[i];
               const angle = (i / blobs.length) * Math.PI * 2 + (Math.random() - 0.5) * 1.5;
-              const speed = 8 + Math.random() * 4;
+              const speed = 12 + Math.random() * 6;
               b.vx = Math.cos(angle) * speed;
               b.vy = Math.sin(angle) * speed;
             }
