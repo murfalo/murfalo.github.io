@@ -1157,9 +1157,12 @@
           b.x += b.vx;
           b.y += b.vy;
 
-          // Free-flying blobs become normal on wall contact
-          if (b.freeFlying && (b.x <= b.r || b.x >= W - b.r || b.y <= b.r || b.y >= H - b.r)) {
-            b.freeFlying = false;
+          // Free-flying blobs become normal on wall contact or when they lose momentum
+          if (b.freeFlying) {
+            const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+            if (spd < SPEED_CLAMP || b.x <= b.r || b.x >= W - b.r || b.y <= b.r || b.y >= H - b.r) {
+              b.freeFlying = false;
+            }
           }
 
           // Allow center past edge by up to half radius (wall smoosh)
@@ -1249,7 +1252,7 @@
       ];
       const nudgeDelay = (10 + Math.random() * 50) * 1000; // 10-60 seconds
       setTimeout(() => {
-        if (!isSpinning && vomitHintIndex === 0) {
+        if (!isSpinning && spewCount === 0) {
           const pick = avatarNudges[Math.floor(Math.random() * avatarNudges.length)];
           showHint(pick, 3);
         }
