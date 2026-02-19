@@ -103,12 +103,12 @@
       border-radius: 50%;
       object-fit: cover;
       box-shadow: 0 0 24px var(--color-primary-glow);
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      transition: box-shadow 0.3s ease;
+      cursor: pointer;
     }
 
     .avatar:hover {
       box-shadow: 0 0 40px var(--color-primary-glow), 0 0 80px rgba(139, 92, 246, 0.15);
-      transform: scale(1.03);
     }
 
     h1 {
@@ -175,12 +175,31 @@
       z-index: 3;
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.3s ease;
     }
 
     .bubble-hint.visible {
       opacity: 0.5;
     }
+
+    /* Screen shake */
+    @keyframes shake {
+      0%, 100% { transform: translate(0, 0); }
+      10% { transform: translate(-4px, 2px); }
+      20% { transform: translate(4px, -2px); }
+      30% { transform: translate(-3px, -3px); }
+      40% { transform: translate(3px, 3px); }
+      50% { transform: translate(-2px, 4px); }
+      60% { transform: translate(2px, -4px); }
+      70% { transform: translate(-3px, 2px); }
+      80% { transform: translate(3px, -2px); }
+      90% { transform: translate(-2px, 3px); }
+    }
+
+    .shake {
+      animation: shake 0.5s ease-in-out;
+    }
+
   </style>
 </head>
 <body>
@@ -237,7 +256,7 @@
       </a>
     </nav>
   </main>
-  <p class="bubble-hint" id="bubble-hint">oh no! you popped my bubble</p>
+  <p class="bubble-hint" id="bubble-hint"></p>
 
   <script>
     // --- Typewriter ---
@@ -298,22 +317,146 @@
       typeWord(next());
     })();
 
-    // --- Interactive lava lamp (WebGL metaball shader) ---
+    // --- Interactive lava lamp (WebGL metaball shader) + Easter eggs ---
     (() => {
       const canvas = document.getElementById("lava");
       const gl = canvas.getContext("webgl");
       if (!gl) { console.warn("WebGL not available — lava lamp disabled"); return; }
 
+      // --- Constants ---
+      const SPEED_CLAMP = 3.5;
+      const SPEED_CLAMP_FLYING = 14;
+      const DAMPING = 0.984;
+
+      const IDLE_UNIFORM_R = 38;
+      const IDLE_RADIUS_LERP = 0.03;
+      const IDLE_NUDGE_FRAMES = [900, 1500, 2400];
+      const IDLE_DANCE_START = 3000;
+      const IDLE_SHAPE_DURATION = 360;
+      const IDLE_SHAPE_BLEND = 120;
+
+      const CURSOR_R_REST = 52;
+      const CURSOR_R_CLICK = 90;
+      const CURSOR_SPRING_K = 0.12;
+      const CURSOR_SPRING_DAMP = 0.55;
+      const CURSOR_TRAIL_LAG = 0.35;
+
+      const WALL_SPRING = 0.15;
+      const WALL_DAMP = 0.92;
+
+      const POP_RADIUS = 250;
+      const POP_BONUS_COUNT = 4;
+      const REASSEMBLE_RADIUS = 150;
+      const REASSEMBLE_DELAY = 180;
+
+      const BLOB_FADE_RATE = 0.95;
+      const BLOB_FADE_MIN = 2;
+      const BLOB_FADE_RATE_GOHOME = 0.97;
+
+      const SPEW_INTERVAL = 4;
+      const MAX_BLOBS = 48;
+
+      const MOUSE_SPEED_DECAY = 0.9;
+      const MOUSE_PUSH_RANGE = 400;
+      const MOUSE_REPEL_RANGE = 900;
+      const MOUSE_ATTRACT_RANGE = 600;
+      const MOUSE_PROXIMITY_DAMP = 200;
+
+      const HINT_FADE_MS = 250;
+      const HINT_DISPLAY_MS = 2500;
+
+      const SPIN_MAX = 20;
+      const SPIN_ACCEL = 0.6;
+      const SPIN_DECEL = 0.985;
+      const HINT_AT_BLOB = [1, 10, 25];
+
+      function smoothstep01(x) {
+        const t = x < 0 ? 0 : x > 1 ? 1 : x;
+        return t * t * (3 - 2 * t);
+      }
+
+      // --- State ---
       let W, H;
+
+      // Input
       let mx = null, my = null;
       let mouseSpeed = 0;
       let mouseDown = false;
-      let time = 0;
-      let cursorRadius = 52;
+      let cursorRadius = CURSOR_R_REST;
       let cursorRadiusVel = 0;
+      let cursorTrailX = null, cursorTrailY = null;
+
+      // Animation time
+      let time = 0;
+      let lastInteractionTime = 0;
+
+      // Pop / reassemble
       let hasPopped = false;
-      let hasReassembled = false;
       let popFrame = 0;
+      let hasReassembled = false;
+
+      // Party mode
+      let partyMode = false;
+      let hueOffset = 0;
+
+      // Idle
+      let idleMode = false;
+      let idleShapeIndex = 0;
+      let prevIdleShapeIndex = 0;
+      let idleShapeSwitchTime = 0;
+      let idleDanceStart = 0;
+      let idleRadiusFactor = 1.0;
+      let idleHinted = false;
+
+      // Avatar spin
+      let isSpinning = false;
+      let avatarHeld = false;
+      let spinAngle = 0;
+      let spinSpeed = 0;
+      let spinResetTimer = 0;
+      let spewCooldown = 0;
+      let spewCount = 0;
+      let vomitHintIndex = 0;
+
+      // Shake
+      let lastShakeTime = 0;
+
+      // Idle formation shapes (normalized offsets from center, y-down screen coords)
+      const shapes = [
+        // Heart
+        [
+          {x: 0, y: -0.08},
+          {x: -0.15, y: -0.22},
+          {x: -0.27, y: -0.08},
+          {x: -0.17, y: 0.1},
+          {x: 0, y: 0.27},
+          {x: 0.17, y: 0.1},
+          {x: 0.27, y: -0.08},
+          {x: 0.15, y: -0.22},
+        ],
+        // Letter M
+        [
+          {x: -0.25, y: 0.2},
+          {x: -0.25, y: -0.2},
+          {x: -0.1, y: 0.02},
+          {x: 0, y: -0.12},
+          {x: 0.1, y: 0.02},
+          {x: 0.25, y: -0.2},
+          {x: 0.25, y: 0.2},
+          {x: 0, y: 0.2},
+        ],
+        // Smiley
+        [
+          {x: -0.1, y: -0.12},
+          {x: 0.1, y: -0.12},
+          {x: -0.2, y: 0.05},
+          {x: -0.1, y: 0.16},
+          {x: 0, y: 0.19},
+          {x: 0.1, y: 0.16},
+          {x: 0.2, y: 0.05},
+          {x: 0, y: -0.25},
+        ],
+      ];
 
       function resize() {
         W = canvas.width = window.innerWidth;
@@ -323,6 +466,17 @@
       resize();
       window.addEventListener("resize", resize);
 
+      const welcomeBacks = ["welcome back!", "oh hi!", "you're back!", "missed you :)"];
+      function recordInteraction() {
+        lastInteractionTime = time;
+        if (idleHinted) {
+          idleHinted = false;
+          const msg = welcomeBacks[Math.floor(Math.random() * welcomeBacks.length)];
+          showHint(msg, 1);
+        }
+        if (idleMode) idleMode = false;
+      }
+
       window.addEventListener("mousemove", e => {
         if (mx !== null) {
           const dx = e.clientX - mx;
@@ -330,6 +484,7 @@
           mouseSpeed = Math.sqrt(dx * dx + dy * dy);
         }
         mx = e.clientX; my = e.clientY;
+        recordInteraction();
       });
       window.addEventListener("touchmove", e => {
         const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
@@ -338,12 +493,24 @@
           mouseSpeed = Math.sqrt(dx * dx + dy * dy);
         }
         mx = tx; my = ty;
+        recordInteraction();
       }, { passive: true });
-      window.addEventListener("mouseleave", () => { mx = null; my = null; mouseSpeed = 0; mouseDown = false; });
-      window.addEventListener("mousedown", () => { mouseDown = true; });
+      window.addEventListener("mouseleave", () => {
+        mx = null; my = null; mouseSpeed = 0; mouseDown = false;
+        cursorTrailX = null; cursorTrailY = null;
+      });
+      window.addEventListener("mousedown", () => { mouseDown = true; recordInteraction(); });
       window.addEventListener("mouseup", () => { mouseDown = false; });
-      window.addEventListener("touchstart", () => { mouseDown = true; }, { passive: true });
+      window.addEventListener("touchstart", e => {
+        mouseDown = true;
+        const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
+        mx = tx; my = ty;
+        recordInteraction();
+      }, { passive: true });
       window.addEventListener("touchend", () => { mouseDown = false; });
+
+      // Keydown for idle tracking
+      window.addEventListener("keydown", () => { recordInteraction(); });
 
       // --- Shaders ---
       const vsSource = `
@@ -354,7 +521,23 @@
       const fsSource = `
         precision mediump float;
         uniform float u_time;
-        uniform vec3 u_blobs[9];
+        uniform float u_hue;
+        uniform vec3 u_blobs[64];
+
+        vec3 rgb2hsv(vec3 c) {
+          vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+          vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+          vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+          float d = q.x - min(q.w, q.y);
+          float e = 1.0e-10;
+          return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+        }
+
+        vec3 hsv2rgb(vec3 c) {
+          vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+          vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+          return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+        }
 
         float hash(vec2 p) {
           return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
@@ -364,7 +547,7 @@
           vec2 uv = gl_FragCoord.xy;
           float field = 0.0;
 
-          for (int i = 0; i < 9; i++) {
+          for (int i = 0; i < 64; i++) {
             vec2 delta = uv - u_blobs[i].xy;
             float r = u_blobs[i].z;
             float distSq = dot(delta, delta);
@@ -374,33 +557,37 @@
           vec3 bg = vec3(0.094, 0.094, 0.106);
           float threshold = 0.65;
 
-          // Distance from the iso-surface
           float dist = abs(field - threshold);
-
-          // Sharp neon edge line
           float edge = exp(-dist * 35.0);
-
-          // Tight glow halo for good contrast against dark bg
           float glow = exp(-dist * 14.0) * 0.3;
-
-          // Dark tinted interior (subtle)
           float interior = smoothstep(threshold - 0.02, threshold + 0.02, field);
 
-          // Neon colors
           vec3 neonBright = vec3(0.75, 0.40, 1.0);
           vec3 neonGlow = vec3(0.50, 0.20, 0.85);
           vec3 interiorColor = vec3(0.12, 0.06, 0.22);
+
+          if (u_hue > 0.001) {
+            vec3 hb = rgb2hsv(neonBright);
+            hb.x = fract(hb.x + u_hue);
+            neonBright = hsv2rgb(hb);
+
+            vec3 hg = rgb2hsv(neonGlow);
+            hg.x = fract(hg.x + u_hue);
+            neonGlow = hsv2rgb(hg);
+
+            vec3 hi = rgb2hsv(interiorColor);
+            hi.x = fract(hi.x + u_hue);
+            interiorColor = hsv2rgb(hi);
+          }
 
           vec3 col = bg;
           col = mix(col, interiorColor, interior * 0.35);
           col += neonGlow * glow;
           col += neonBright * edge * 1.5;
 
-          // Subtle pulsing brightness on outline
           float pulseBright = 0.9 + 0.1 * sin(u_time * 2.0);
           col *= mix(1.0, pulseBright, edge);
 
-          // Dithering
           float dither = (hash(gl_FragCoord.xy + u_time) - 0.5) / 255.0 * 2.0;
           col += dither;
 
@@ -441,12 +628,14 @@
 
       // Uniform locations
       const uTime = gl.getUniformLocation(prog, "u_time");
+      const uHue = gl.getUniformLocation(prog, "u_hue");
       const uBlobs = [];
-      for (let i = 0; i < 9; i++) {
+      for (let i = 0; i < 64; i++) {
         uBlobs.push(gl.getUniformLocation(prog, `u_blobs[${i}]`));
       }
 
       // --- Blob physics: 3 large + 5 medium = 8 blobs ---
+      const ORIGINAL_COUNT = 8;
       function makeBlob(rMin, rMax) {
         return {
           x: 0, y: 0, vx: 0, vy: 0,
@@ -462,7 +651,10 @@
         ...Array.from({length: 3}, () => makeBlob(90, 128)),   // large
         ...Array.from({length: 5}, () => makeBlob(49, 83)),    // medium
       ];
-      // Start blobs in a ring around center card, with slow outward drift
+      // Store original radii for reassembly reset
+      const originalRadii = blobs.map(b => b.r);
+
+      // Start blobs in a ring around center card
       {
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
@@ -475,26 +667,270 @@
       }
 
       const hintEl = document.getElementById("bubble-hint");
-      let hintTimer = 0;
-      function showHint(text) {
-        clearTimeout(hintTimer);
-        hintEl.textContent = text;
-        hintEl.classList.add("visible");
-        hintTimer = setTimeout(() => hintEl.classList.remove("visible"), 4000);
+      // Priority queue: lower number = higher priority
+      // 0 = top (pop, avatar), 1 = high (reassemble), 2 = normal, 3 = low (visits)
+      const hintQueue = []; // [{text, pri}]
+      let hintState = "idle"; // "idle" | "visible" | "fading-out"
+      let hintDisplayTimer = 0;
+      let hintFadeTimer = 0;
+      let hintCurrentPri = 99;
+
+      function showHint(text, pri) {
+        if (pri === undefined) pri = 2;
+        // Top priority: clear everything lower
+        if (pri === 0) {
+          for (let i = hintQueue.length - 1; i >= 0; i--) {
+            if (hintQueue[i].pri > pri) hintQueue.splice(i, 1);
+          }
+        }
+        // Low priority: only queue if nothing is showing and queue is empty
+        if (pri === 3 && (hintState !== "idle" || hintQueue.length > 0)) return;
+        hintQueue.push({text, pri});
+        // Sort by priority (stable — equal priorities keep insertion order)
+        hintQueue.sort((a, b) => a.pri - b.pri);
+        processHintQueue();
       }
 
-      function update() {
-        time++;
-        // Decay mouse speed each frame
-        mouseSpeed *= 0.9;
+      function processHintQueue() {
+        if (hintQueue.length === 0) return;
+        const fadeMs = HINT_FADE_MS;
 
-        // Pop when mouse enters the bubble cluster or on first click
+        if (hintState === "idle") {
+          const item = hintQueue.shift();
+          hintEl.textContent = item.text;
+          hintEl.classList.add("visible");
+          hintState = "visible";
+          hintCurrentPri = item.pri;
+          clearTimeout(hintDisplayTimer);
+          hintDisplayTimer = setTimeout(() => {
+            hintEl.classList.remove("visible");
+            hintState = "fading-out";
+            hintCurrentPri = 99;
+            hintFadeTimer = setTimeout(() => {
+              hintState = "idle";
+              processHintQueue();
+            }, fadeMs);
+          }, HINT_DISPLAY_MS);
+        } else if (hintState === "visible") {
+          // Only interrupt if incoming has equal or higher priority
+          if (hintQueue[0].pri <= hintCurrentPri) {
+            clearTimeout(hintDisplayTimer);
+            hintEl.classList.remove("visible");
+            hintState = "fading-out";
+            hintCurrentPri = 99;
+            clearTimeout(hintFadeTimer);
+            hintFadeTimer = setTimeout(() => {
+              hintState = "idle";
+              processHintQueue();
+            }, fadeMs);
+          }
+        }
+      }
+
+      // --- Feature E: Avatar Spin + Vomit Orbs (JS-driven rotation) ---
+      const avatarEl = document.querySelector(".avatar");
+      const vomitHints = ["wheee", "WHEEEEE", "I'm gonna be sick"];
+
+      function spewBlobs() {
+        if (blobs.length >= MAX_BLOBS) return;
+        const rect = avatarEl.getBoundingClientRect();
+        const ax = rect.left + rect.width / 2;
+        const ay = rect.top + rect.height / 2;
+
+        if (!partyMode) {
+          partyMode = true;
+          hueOffset = 0;
+          hasReassembled = false;
+        }
+
+        // Sprinkler: direction follows current spin angle
+        const sprayRad = spinAngle * Math.PI / 180;
+        const b = makeBlob(15, 25);
+        b.x = ax;
+        b.y = ay;
+        b.vx = Math.cos(sprayRad) * (12 + Math.random() * 4);
+        b.vy = Math.sin(sprayRad) * (12 + Math.random() * 4);
+        b.freeFlying = true;
+        blobs.push(b);
+        spewCount++;
+
+        // Show hints at specific blob milestones
+        if (vomitHintIndex < vomitHints.length && spewCount >= HINT_AT_BLOB[vomitHintIndex]) {
+          showHint(vomitHints[vomitHintIndex], 0);
+          vomitHintIndex++;
+        }
+      }
+
+      function startSpin(e) {
+        e.stopPropagation();
+        if (e.type === "mousedown") e.preventDefault();
+        recordInteraction();
+        clearTimeout(spinResetTimer);
+        isSpinning = true;
+        avatarHeld = true;
+        spewCooldown = 0;
+        spewBlobs();
+      }
+
+      avatarEl.addEventListener("mousedown", startSpin);
+      avatarEl.addEventListener("touchstart", startSpin, { passive: false });
+
+      function stopHold() {
+        if (!avatarHeld) return;
+        avatarHeld = false;
+        // Party mode lingers for 5s after release, then fades
+        clearTimeout(spinResetTimer);
+        spinResetTimer = setTimeout(() => { partyMode = false; }, 5000);
+      }
+      window.addEventListener("mouseup", stopHold);
+      window.addEventListener("touchend", stopHold);
+
+      // --- Feature I: Shake to Scatter (Mobile) ---
+      function handleMotion(e) {
+        const acc = e.acceleration || e.accelerationIncludingGravity;
+        if (!acc || acc.x === null) return;
+        const mag = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
+        const threshold = e.acceleration ? 15 : 25;
+        if (mag > threshold && Date.now() - lastShakeTime > 2000) {
+          lastShakeTime = Date.now();
+          recordInteraction();
+          for (const b of blobs) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 5 + Math.random() * 3;
+            b.vx = Math.cos(angle) * speed;
+            b.vy = Math.sin(angle) * speed;
+          }
+          showHint("earthquake!");
+        }
+      }
+
+      // iOS 13+ needs permission from a user gesture
+      window.addEventListener("touchstart", function reqMotion() {
+        window.removeEventListener("touchstart", reqMotion);
+        if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+          DeviceMotionEvent.requestPermission().then(state => {
+            if (state === "granted") window.addEventListener("devicemotion", handleMotion);
+          }).catch(() => {});
+        }
+      }, { passive: true });
+      // Non-iOS devices
+      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission !== "function") {
+        window.addEventListener("devicemotion", handleMotion);
+      }
+
+      // --- Physics loop ---
+      function updateAvatarSpin() {
+        // Continuous sprinkle while avatar is held down
+        if (avatarHeld && isSpinning) {
+          spewCooldown--;
+          if (spewCooldown <= 0) {
+            spewBlobs();
+            spewCooldown = SPEW_INTERVAL;
+          }
+        }
+
+        // Avatar spin physics: accelerate while held, decelerate on release
+        if (avatarHeld) {
+          spinSpeed = Math.min(spinSpeed + SPIN_ACCEL, SPIN_MAX);
+          spinAngle += spinSpeed;
+          avatarEl.style.transform = `rotate(${spinAngle}deg)`;
+        } else if (spinSpeed > 0.5) {
+          // Fast decel phase: just slow down
+          spinSpeed *= SPIN_DECEL;
+          spinAngle += spinSpeed;
+          avatarEl.style.transform = `rotate(${spinAngle}deg)`;
+        } else if (isSpinning) {
+          // Settle phase: spring toward nearest upright (multiple of 360)
+          const remainder = ((spinAngle % 360) + 360) % 360;
+          const target = remainder > 180
+            ? spinAngle + (360 - remainder)
+            : spinAngle - remainder;
+          const diff = target - spinAngle;
+          spinAngle += diff * 0.08;
+          avatarEl.style.transform = `rotate(${spinAngle}deg)`;
+          if (Math.abs(diff) < 0.5) {
+            spinAngle = target;
+            spinSpeed = 0;
+            isSpinning = false;
+            avatarEl.style.transform = "";
+          }
+        }
+      }
+
+      function updateHue() {
+        if (partyMode) {
+          hueOffset += 0.005;
+          if (hueOffset > 1) hueOffset -= 1;
+        } else if (Math.abs(hueOffset) > 0.001) {
+          // Smoothly return to original hue via shortest path around the circle
+          if (hueOffset > 0.5) {
+            hueOffset += 0.008;
+            if (hueOffset > 1) hueOffset -= 1;
+          } else {
+            hueOffset *= 0.97;
+          }
+        } else {
+          hueOffset = 0;
+        }
+      }
+
+      function updateCursorTrail() {
+        if (mx !== null) {
+          if (cursorTrailX === null) { cursorTrailX = mx; cursorTrailY = my; }
+          cursorTrailX += (mx - cursorTrailX) * CURSOR_TRAIL_LAG;
+          cursorTrailY += (my - cursorTrailY) * CURSOR_TRAIL_LAG;
+        } else {
+          cursorTrailX = null;
+          cursorTrailY = null;
+        }
+      }
+
+      function updateIdleTimeline() {
+        // Idle nudges → dance → go home
+        // Timeline (seconds idle): 15→hello?, 25→helloooo, 40→anyone there?,
+        // 50→start dancing, ~75→head home
+        if (!idleMode) {
+          const idleFrames = time - lastInteractionTime;
+          if (idleFrames === IDLE_NUDGE_FRAMES[0]) { showHint("hello?", 3); idleHinted = true; }
+          if (idleFrames === IDLE_NUDGE_FRAMES[1]) showHint("helloooo", 3);
+          if (idleFrames === IDLE_NUDGE_FRAMES[2]) showHint("anyone there?", 3);
+          if (idleFrames === IDLE_DANCE_START) {
+            showHint("fine, I'll entertain myself");
+            idleMode = true;
+            idleShapeIndex = 0;
+            prevIdleShapeIndex = 0;
+            idleShapeSwitchTime = time;
+            idleDanceStart = time;
+          }
+        }
+
+        // Cycle idle shapes
+        if (idleMode && time - idleShapeSwitchTime > IDLE_SHAPE_DURATION) {
+          prevIdleShapeIndex = idleShapeIndex;
+          idleShapeIndex = (idleShapeIndex + 1) % shapes.length;
+          idleShapeSwitchTime = time;
+          for (let k = 0; k < blobs.length; k++) {
+            blobs[k].vx *= 0.3;
+            blobs[k].vy *= 0.3;
+          }
+        }
+
+        // Smoothly shrink blob radii during idle dance
+        const targetRadiusFactor = idleMode ? 0.0 : 1.0;
+        idleRadiusFactor += (targetRadiusFactor - idleRadiusFactor) * IDLE_RADIUS_LERP;
+        for (let k = 0; k < Math.min(ORIGINAL_COUNT, blobs.length); k++) {
+          blobs[k].r = IDLE_UNIFORM_R + (originalRadii[k] - IDLE_UNIFORM_R) * idleRadiusFactor;
+        }
+      }
+
+      function updateBlobs() {
+        // Pop: triggers on hover near center or click
         if (!hasPopped) {
           let shouldPop = false;
           if (mx !== null) {
             const dx = mx - W / 2;
             const dy = my - H / 2;
-            if (Math.sqrt(dx * dx + dy * dy) < 250) shouldPop = true;
+            if (Math.sqrt(dx * dx + dy * dy) < POP_RADIUS) shouldPop = true;
           }
           if (mouseDown) shouldPop = true;
           if (shouldPop) {
@@ -507,36 +943,110 @@
               b.vx = Math.cos(angle) * speed;
               b.vy = Math.sin(angle) * speed;
             }
-            showHint("oh no! you popped my bubble");
+            showHint("oh no! you popped my bubble", 0);
+
+            const cx = W / 2, cy = H / 2;
+            for (let i = 0; i < POP_BONUS_COUNT; i++) {
+              const angle = (i / POP_BONUS_COUNT) * Math.PI * 2;
+              const b = makeBlob(25, 35);
+              b.x = cx;
+              b.y = cy;
+              b.vx = Math.cos(angle) * 6;
+              b.vy = Math.sin(angle) * 6;
+              blobs.push(b);
+            }
           }
         }
 
-        // Detect blobs reassembled (wait 180 frames after pop so they spread first)
-        if (hasPopped && !hasReassembled && time - popFrame > 180) {
+        // Reassemble detection
+        if (hasPopped && !hasReassembled && time - popFrame > REASSEMBLE_DELAY) {
           let cx = 0, cy = 0;
-          for (let i = 0; i < blobs.length; i++) { cx += blobs[i].x; cy += blobs[i].y; }
-          cx /= blobs.length; cy /= blobs.length;
+          const n = Math.min(ORIGINAL_COUNT, blobs.length);
+          for (let i = 0; i < n; i++) { cx += blobs[i].x; cy += blobs[i].y; }
+          cx /= n; cy /= n;
           let allClose = true;
-          for (let i = 0; i < blobs.length; i++) {
+          for (let i = 0; i < n; i++) {
             const dx = blobs[i].x - cx, dy = blobs[i].y - cy;
-            if (Math.sqrt(dx * dx + dy * dy) > 150) { allClose = false; break; }
+            if (Math.sqrt(dx * dx + dy * dy) > REASSEMBLE_RADIUS) { allClose = false; break; }
           }
           if (allClose) {
-            hasReassembled = true;
-            showHint("aw, you put it back :)");
+            if (idleMode) {
+              if (blobs.length <= ORIGINAL_COUNT) {
+                hasReassembled = true;
+                showHint("ok I'm done, goodnight", 3);
+                idleMode = false;
+              }
+            } else {
+              hasReassembled = true;
+              showHint("aw, you put it back :)", 1);
+            }
           }
         }
 
-        // Spring-animate cursor metaball radius (boing on click)
-        const targetRadius = mouseDown ? 90 : 52;
-        const springK = 0.12;
-        const springDamp = 0.55;
-        cursorRadiusVel += (targetRadius - cursorRadius) * springK;
-        cursorRadiusVel *= springDamp;
+        // Gradually fade extra blobs after reassembly (pause during vomit)
+        if (hasReassembled && !partyMode && blobs.length > ORIGINAL_COUNT) {
+          for (let j = blobs.length - 1; j >= ORIGINAL_COUNT; j--) {
+            blobs[j].r *= BLOB_FADE_RATE;
+            if (blobs[j].r < BLOB_FADE_MIN) {
+              blobs.splice(j, 1);
+            }
+          }
+        }
+
+        // Spring-animate cursor metaball radius
+        const targetRadius = mouseDown ? CURSOR_R_CLICK : CURSOR_R_REST;
+        cursorRadiusVel += (targetRadius - cursorRadius) * CURSOR_SPRING_K;
+        cursorRadiusVel *= CURSOR_SPRING_DAMP;
         cursorRadius += cursorRadiusVel;
 
+        // Per-blob physics loop
         for (let i = 0; i < blobs.length; i++) {
           const b = blobs[i];
+
+          // Idle formation steering
+          if (idleMode) {
+            const danceSec = (time - idleDanceStart) / 60;
+            const homeBlend = smoothstep01(hasPopped ? (danceSec - 25) / 5 : 0);
+            const shapeFade = smoothstep01((time - idleShapeSwitchTime) / IDLE_SHAPE_BLEND);
+
+            const curShape = shapes[idleShapeIndex];
+            const prevShape = shapes[prevIdleShapeIndex];
+            const scale = Math.min(W, H) * 0.7;
+            const cx = W / 2, cy = H / 2;
+
+            // Fade out extra blobs during go-home
+            if (homeBlend > 0 && i >= ORIGINAL_COUNT) {
+              b.r *= BLOB_FADE_RATE_GOHOME;
+              if (b.r < BLOB_FADE_MIN) {
+                blobs.splice(i, 1);
+                i--;
+                continue;
+              }
+            }
+
+            let tx, ty;
+            if (i < curShape.length) {
+              const prevX = cx + prevShape[i].x * scale;
+              const prevY = cy + prevShape[i].y * scale;
+              const curX = cx + curShape[i].x * scale;
+              const curY = cy + curShape[i].y * scale;
+              const shapeX = prevX + (curX - prevX) * shapeFade;
+              const shapeY = prevY + (curY - prevY) * shapeFade;
+              tx = shapeX + (cx - shapeX) * homeBlend;
+              ty = shapeY + (cy - shapeY) * homeBlend;
+              b.vx += (tx - b.x) * 0.003;
+              b.vy += (ty - b.y) * 0.003;
+            } else {
+              const angle = time * 0.002 + i * 1.3;
+              const orbitR = Math.min(W, H) * 0.45;
+              const orbitX = cx + Math.cos(angle) * orbitR;
+              const orbitY = cy + Math.sin(angle) * orbitR;
+              tx = orbitX + (cx - orbitX) * homeBlend;
+              ty = orbitY + (cy - orbitY) * homeBlend;
+              b.vx += (tx - b.x) * 0.001;
+              b.vy += (ty - b.y) * 0.001;
+            }
+          }
 
           // sinusoidal drift (slow, languid)
           b.vx += Math.sin(time * b.freqX + b.phaseX) * 0.0002;
@@ -545,14 +1055,17 @@
           // buoyancy
           b.vy += b.buoyancy;
 
-          // blob-blob interactions
+          // blob-blob interactions (skip if either blob is free-flying)
           for (let j = i + 1; j < blobs.length; j++) {
             const o = blobs[j];
+            if (b.freeFlying || o.freeFlying) continue;
             const dx = o.x - b.x;
             const dy = o.y - b.y;
             const distSq = dx * dx + dy * dy;
-            const dist = Math.sqrt(distSq);
             const combinedR = b.r + o.r;
+            const maxInteract = combinedR * 3.0;
+            if (distSq > maxInteract * maxInteract) continue;
+            const dist = Math.sqrt(distSq);
 
             if (dist < 1) continue;
 
@@ -563,7 +1076,7 @@
               b.vx -= fx; b.vy -= fy;
               o.vx += fx; o.vy += fy;
             } else if (dist < combinedR * 3.0) {
-              const force = 0.004 * (dist - combinedR * 0.5) / (combinedR * 2.5);
+              const force = 0.0012 * (dist - combinedR * 0.5) / (combinedR * 2.5);
               const fx = (dx / dist) * force;
               const fy = (dy / dist) * force;
               b.vx += fx; b.vy += fy;
@@ -571,64 +1084,82 @@
             }
           }
 
-          // Mouse interaction — repel on hover, suck on click
-          if (mx !== null) {
+          // Mouse interaction — push until popped + escaped, then suck
+          if (mx !== null && !b.freeFlying && !idleMode) {
             const dx = b.x - mx;
             const dy = b.y - my;
             const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 50);
-            if (mouseDown) {
-              // Click-to-suck: strong pull toward cursor
-              if (dist < 900) {
-                const taper = 1.0 - dist / 900;
-                const force = taper * taper * 0.7;
-                b.vx -= (dx / dist) * force;
-                b.vy -= (dy / dist) * force;
+            const escaped = hasPopped && time - popFrame > 150;
+
+            if (!escaped) {
+              if (dist < MOUSE_PUSH_RANGE) {
+                const taper = 1.0 - dist / MOUSE_PUSH_RANGE;
+                const force = taper * taper * 0.3;
+                b.vx += (dx / dist) * force;
+                b.vy += (dy / dist) * force;
               }
-            } else if (dist < 600) {
-              const speedMult = 1.0 + mouseSpeed * 0.08;
-              const invSq = 1.0 / (dist * dist);
-              const taper = 1.0 - dist / 600;
-              const force = invSq * 3500 * speedMult * taper;
-              b.vx += (dx / dist) * force;
-              b.vy += (dy / dist) * force;
+            } else if (mouseDown) {
+              if (dist < MOUSE_REPEL_RANGE) {
+                const taper = 1.0 - dist / MOUSE_REPEL_RANGE;
+                const force = taper * taper * 0.7;
+                b.vx += (dx / dist) * force;
+                b.vy += (dy / dist) * force;
+              }
+            } else if (dist < MOUSE_ATTRACT_RANGE) {
+              const speedMult = 1.0 + mouseSpeed * 0.05;
+              const taper = 1.0 - dist / MOUSE_ATTRACT_RANGE;
+              const force = taper * taper * 0.12 * speedMult;
+              b.vx -= (dx / dist) * force;
+              b.vy -= (dy / dist) * force;
+              if (dist < MOUSE_PROXIMITY_DAMP) {
+                const damp = 0.92 + 0.06 * (dist / MOUSE_PROXIMITY_DAMP);
+                b.vx *= damp;
+                b.vy *= damp;
+              }
             }
           }
 
-          // wall springs — soft gooey pushback, allows smooshing into walls
+          // wall springs — soft gooey pushback
           if (b.x < b.r) {
             const pen = (b.r - b.x) / b.r;
-            b.vx += pen * 0.15;
-            b.vx *= 0.92;
+            b.vx += pen * WALL_SPRING;
+            b.vx *= WALL_DAMP;
           }
           if (b.x > W - b.r) {
             const pen = (b.x - (W - b.r)) / b.r;
-            b.vx -= pen * 0.15;
-            b.vx *= 0.92;
+            b.vx -= pen * WALL_SPRING;
+            b.vx *= WALL_DAMP;
           }
           if (b.y < b.r) {
             const pen = (b.r - b.y) / b.r;
-            b.vy += pen * 0.15;
-            b.vy *= 0.92;
+            b.vy += pen * WALL_SPRING;
+            b.vy *= WALL_DAMP;
           }
           if (b.y > H - b.r) {
             const pen = (b.y - (H - b.r)) / b.r;
-            b.vy -= pen * 0.15;
-            b.vy *= 0.92;
+            b.vy -= pen * WALL_SPRING;
+            b.vy *= WALL_DAMP;
           }
 
-          // damping (lower = slower, more viscous)
-          b.vx *= 0.984;
-          b.vy *= 0.984;
+          // damping
+          b.vx *= DAMPING;
+          b.vy *= DAMPING;
 
-          // clamp speed
+          // clamp speed (free-flying blobs get a higher clamp to reach the wall)
+          const clamp = b.freeFlying ? SPEED_CLAMP_FLYING : SPEED_CLAMP;
           const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-          if (speed > 3.5) {
-            b.vx = (b.vx / speed) * 3.5;
-            b.vy = (b.vy / speed) * 3.5;
+          if (speed > clamp) {
+            b.vx = (b.vx / speed) * clamp;
+            b.vy = (b.vy / speed) * clamp;
           }
 
           b.x += b.vx;
           b.y += b.vy;
+
+          // Free-flying blobs become normal on wall contact
+          if (b.freeFlying && (b.x <= b.r || b.x >= W - b.r || b.y <= b.r || b.y >= H - b.r)) {
+            b.freeFlying = false;
+          }
 
           // Allow center past edge by up to half radius (wall smoosh)
           b.x = Math.max(-b.r * 0.5, Math.min(W + b.r * 0.5, b.x));
@@ -636,19 +1167,51 @@
         }
       }
 
+      function update() {
+        time++;
+        mouseSpeed *= MOUSE_SPEED_DECAY;
+        updateAvatarSpin();
+        updateHue();
+        updateCursorTrail();
+        updateIdleTimeline();
+        updateBlobs();
+      }
+
       function draw() {
         gl.uniform1f(uTime, time * 0.01);
+        gl.uniform1f(uHue, hueOffset);
 
-        for (let i = 0; i < blobs.length; i++) {
-          const b = blobs[i];
-          gl.uniform3f(uBlobs[i], b.x, H - b.y, b.r);
+        let slot = 0;
+        const maxSlots = 64;
+
+        // Physics blobs
+        for (let i = 0; i < blobs.length && slot < maxSlots - 2; i++) {
+          gl.uniform3f(uBlobs[slot], blobs[i].x, H - blobs[i].y, blobs[i].r);
+          slot++;
         }
 
-        // Mouse cursor metaball (index 8) — spring-animated radius
+        // Primary cursor metaball
         if (mx !== null) {
-          gl.uniform3f(uBlobs[8], mx, H - my, cursorRadius);
+          gl.uniform3f(uBlobs[slot], mx, H - my, cursorRadius);
         } else {
-          gl.uniform3f(uBlobs[8], 0.0, 0.0, 0.0);
+          gl.uniform3f(uBlobs[slot], 0.0, 0.0, 0.0);
+        }
+        slot++;
+
+        // Trailing cursor for natural deformation when moving
+        if (mx !== null && cursorTrailX !== null) {
+          const stretch = Math.min(mouseSpeed / 12, 1.0);
+          const trailR = cursorRadius * 0.55 * stretch;
+          gl.uniform3f(uBlobs[slot], cursorTrailX, H - cursorTrailY, trailR);
+        } else {
+          gl.uniform3f(uBlobs[slot], 0.0, 0.0, 0.0);
+        }
+        slot++;
+
+        // Zero out remaining slots
+        while (slot < maxSlots) {
+          gl.uniform3f(uBlobs[slot], 0.0, 0.0, 0.0);
+          slot++;
         }
 
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -660,6 +1223,36 @@
         requestAnimationFrame(loop);
       }
       loop();
+
+      // --- Feature G: Return Visitor Memory ---
+      try {
+        let visits = parseInt(localStorage.getItem("murfalo_visits") || "0", 10);
+        visits++;
+        localStorage.setItem("murfalo_visits", visits.toString());
+        setTimeout(() => {
+          if (visits === 2) showHint("oh, you're back!", 3);
+          else if (visits === 3) showHint("you again?", 3);
+          else if (visits <= 5) showHint("at this point we're friends", 3);
+          else if (visits <= 9) showHint("ok you basically live here now", 3);
+          else if (visits < 25) showHint("welcome home :)", 3);
+          else showHint("visit #" + visits + ". you're dedicated", 3);
+        }, 5000);
+      } catch (e) { /* localStorage unavailable */ }
+
+      // --- Random avatar hint ---
+      const avatarNudges = [
+        "psst... click my avatar",
+        "try clicking the dog",
+        "that avatar looks clickable...",
+        "go on, give the dog a spin",
+      ];
+      const nudgeDelay = (10 + Math.random() * 50) * 1000; // 10-60 seconds
+      setTimeout(() => {
+        if (!isSpinning && vomitHintIndex === 0) {
+          const pick = avatarNudges[Math.floor(Math.random() * avatarNudges.length)];
+          showHint(pick, 3);
+        }
+      }, nudgeDelay);
     })();
   </script>
 </body>
