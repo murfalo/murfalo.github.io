@@ -325,7 +325,7 @@
 
       // --- Constants ---
       const SPEED_CLAMP = 3.5;
-      const SPEED_CLAMP_FLYING = 14;
+      const SPEED_CLAMP_FLYING = 30;
       const DAMPING = 0.984;
 
       const IDLE_UNIFORM_R = 38;
@@ -940,7 +940,7 @@
             for (let i = 0; i < blobs.length; i++) {
               const b = blobs[i];
               const angle = (i / blobs.length) * Math.PI * 2 + (Math.random() - 0.5) * 1.5;
-              const speed = 18 + Math.random() * 8;
+              const speed = 25 + Math.random() * 10;
               b.vx = Math.cos(angle) * speed;
               b.vy = Math.sin(angle) * speed;
             }
