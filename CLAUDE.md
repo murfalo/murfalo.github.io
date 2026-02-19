@@ -8,7 +8,11 @@ Personal portfolio/landing page for murfalo.com, hosted on GitHub Pages. Pure st
 
 ## Development
 
-There are no build, lint, or test commands. The site is a single `index.html` file with inline CSS, inline SVG icons, and inline JavaScript. To preview locally, open `index.html` in a browser.
+There are no build or lint commands. The site is a single `index.html` file with inline CSS, inline SVG icons, and inline JavaScript. To preview locally, open `index.html` in a browser.
+
+## Testing
+
+Run `bash tests/ci.sh` from the repo root. This runs fast, dependency-free checks (asset existence, HTML structure, webmanifest validity, fragment references, image integrity, merge conflict markers). CI runs the same script via `.github/workflows/ci.yaml`.
 
 ## Deployment
 
