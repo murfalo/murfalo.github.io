@@ -325,7 +325,7 @@
 
       // --- Constants ---
       const SPEED_CLAMP = 3.5;
-      const SPEED_CLAMP_FLYING = 50;
+      const SPEED_CLAMP_FLYING = 14;
       const DAMPING = 0.984;
 
       const IDLE_UNIFORM_R = 38;
@@ -940,9 +940,10 @@
             for (let i = 0; i < blobs.length; i++) {
               const b = blobs[i];
               const angle = (i / blobs.length) * Math.PI * 2 + (Math.random() - 0.5) * 1.5;
-              const speed = 35 + Math.random() * 15;
+              const speed = 8 + Math.random() * 4;
               b.vx = Math.cos(angle) * speed;
               b.vy = Math.sin(angle) * speed;
+              b.freeFlying = true;
             }
             showHint("oh no! you popped my bubble", 0);
 
