@@ -370,7 +370,7 @@
       const SPIN_MAX = 20;
       const SPIN_ACCEL = 0.6;
       const SPIN_DECEL = 0.985;
-      const HINT_AT_BLOB = [1, 10, 25];
+      const HINT_AT_FRAME = [60, 150, 240];
 
       function smoothstep01(x) {
         const t = x < 0 ? 0 : x > 1 ? 1 : x;
@@ -421,6 +421,8 @@
       let spewCooldown = 0;
       let spewCount = 0;
       let vomitHintIndex = 0;
+      let spinHoldFrames = 0;
+      let vomitReady = false;
 
       // Shake
       let lastShakeTime = 0;
@@ -747,12 +749,6 @@
         const ax = rect.left + rect.width / 2;
         const ay = rect.top + rect.height / 2;
 
-        if (!partyMode) {
-          partyMode = true;
-          hueOffset = 0;
-          hasReassembled = false;
-        }
-
         // Sprinkler: direction follows current spin angle
         const sprayRad = spinAngle * Math.PI / 180;
         const b = makeBlob(15, 25);
@@ -763,12 +759,6 @@
         b.freeFlying = true;
         blobs.push(b);
         spewCount++;
-
-        // Show hints at specific blob milestones
-        if (vomitHintIndex < vomitHints.length && spewCount >= HINT_AT_BLOB[vomitHintIndex]) {
-          showHint(vomitHints[vomitHintIndex], 0);
-          vomitHintIndex++;
-        }
       }
 
       function startSpin(e) {
@@ -779,7 +769,8 @@
         isSpinning = true;
         avatarHeld = true;
         spewCooldown = 0;
-        spewBlobs();
+        spinHoldFrames = 0;
+        vomitReady = false;
       }
 
       avatarEl.addEventListener("mousedown", startSpin);
@@ -830,12 +821,30 @@
 
       // --- Physics loop ---
       function updateAvatarSpin() {
-        // Continuous sprinkle while avatar is held down
+        // Spin hold timeline: hints build up, then vomit starts
         if (avatarHeld && isSpinning) {
-          spewCooldown--;
-          if (spewCooldown <= 0) {
-            spewBlobs();
-            spewCooldown = SPEW_INTERVAL;
+          spinHoldFrames++;
+
+          // Show hints at frame milestones
+          if (vomitHintIndex < vomitHints.length && spinHoldFrames >= HINT_AT_FRAME[vomitHintIndex]) {
+            showHint(vomitHints[vomitHintIndex], 0);
+            vomitHintIndex++;
+            // Last hint triggers vomit + party mode
+            if (vomitHintIndex >= vomitHints.length && !vomitReady) {
+              vomitReady = true;
+              partyMode = true;
+              hueOffset = 0;
+              hasReassembled = false;
+            }
+          }
+
+          // Only spew after "I'm gonna be sick"
+          if (vomitReady) {
+            spewCooldown--;
+            if (spewCooldown <= 0) {
+              spewBlobs();
+              spewCooldown = SPEW_INTERVAL;
+            }
           }
         }
 
@@ -1269,6 +1278,21 @@
           showHint(pick, 3);
         }
       }, nudgeDelay);
+
+      // --- Social link hover hints ---
+      const socialHints = {
+        "Email": "send me an email",
+        "GitHub": "explore my GitHub",
+        "Google Scholar": "read my research",
+        "LinkedIn": "connect on LinkedIn",
+        "Twitter": "follow me on X",
+        "Bluesky": "find me on Bluesky",
+        "Instagram": "peek at my Instagram",
+      };
+      document.querySelectorAll("nav a").forEach(a => {
+        const hint = socialHints[a.getAttribute("aria-label")];
+        if (hint) a.addEventListener("mouseenter", () => showHint(hint, 2));
+      });
     })();
   </script>
 </body>
