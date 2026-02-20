@@ -810,8 +810,6 @@
         isSpinning = true;
         avatarHeld = true;
         spewCooldown = 0;
-        spinHoldFrames = 0;
-        vomitReady = false;
       }
 
       avatarEl.addEventListener("mousedown", startSpin);
@@ -862,8 +860,8 @@
 
       // --- Physics loop ---
       function updateAvatarSpin() {
-        // Spin hold timeline: hints build up, then vomit starts
-        if (avatarHeld && isSpinning) {
+        // Spin timeline: hints build up based on total spin time, then vomit starts
+        if (isSpinning) {
           spinHoldFrames++;
 
           // Show hints at frame milestones
@@ -879,8 +877,8 @@
             }
           }
 
-          // Only spew after "I'm gonna be sick"
-          if (vomitReady) {
+          // Only spew while held after "I'm gonna be sick"
+          if (vomitReady && avatarHeld) {
             spewCooldown--;
             if (spewCooldown <= 0) {
               spewBlobs();
@@ -913,6 +911,10 @@
             spinSpeed = 0;
             isSpinning = false;
             avatarEl.style.transform = "";
+            // Reset vomit timeline when spin fully stops
+            spinHoldFrames = 0;
+            vomitHintIndex = 0;
+            vomitReady = false;
           }
         }
       }
