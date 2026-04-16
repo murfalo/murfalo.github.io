@@ -228,7 +228,7 @@
 
     <nav aria-label="Social links">
       <!-- Email -->
-      <a href="mailto:redacted@example.com" aria-label="Email">
+      <a href="#" class="email-link" aria-label="Email">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
       </a>
 
@@ -1337,6 +1337,23 @@
         if (!hint) return;
         a.addEventListener("mouseenter", () => showSocialHint(hint));
         a.addEventListener("mouseleave", hideSocialHint);
+      });
+    })();
+
+    // --- Email obfuscation ---
+    // Address is assembled from char codes at click time so it never appears
+    // as a harvestable string in the HTML source.
+    (() => {
+      const link = document.querySelector("a.email-link");
+      if (!link) return;
+      const build = () => {
+        const u = String.fromCharCode(115, 105, 116, 101);
+        const d = String.fromCharCode(109, 117, 114, 102, 97, 108, 111, 46, 99, 111, 109);
+        return "mailto:" + u + String.fromCharCode(64) + d;
+      };
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        window.location.href = build();
       });
     })();
   </script>
