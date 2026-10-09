@@ -26,98 +26,73 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
   <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#18181b">
+  <meta name="theme-color" content="#0e0c14">
 
   <style>
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    ::selection {
-      background: rgba(139, 92, 246, 0.35);
-      color: #e4e4e7;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --color-bg: #18181b;
+      --color-bg: #0e0c14;
       --color-text: #e4e4e7;
       --color-muted: #a1a1aa;
-      --color-primary: #8b5cf6;
-      --color-primary-glow: rgba(139, 92, 246, 0.4);
+      --color-primary: hsl(258deg 90% 66%);
+      --color-primary-glow: hsl(258deg 90% 66% / 0.4);
+      --color-neon: hsl(275deg 100% 70% / 0.8);
+      --color-neon-deep: hsl(268deg 68% 53%);
+      --color-pink: hsl(325deg 85% 72%);
+      --color-indigo: hsl(235deg 85% 72%);
     }
 
+    ::selection { background: var(--color-primary-glow); color: var(--color-text); }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--color-bg);
+      font-family: system-ui, sans-serif;
+      background: var(--color-bg);
       color: var(--color-text);
       min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
-      position: relative;
       user-select: none;
+      touch-action: none;
     }
 
-    /* Noise texture overlay */
-    .noise {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 2;
-      opacity: 0.035;
-    }
 
-    /* Lava lamp canvas */
     .lava-canvas {
       position: fixed;
       inset: 0;
       width: 100%;
       height: 100%;
-      z-index: 0;
       cursor: grab;
     }
-
-    .lava-canvas:active {
-      cursor: grabbing;
-    }
+    .lava-canvas:active { cursor: grabbing; }
 
     .container {
       text-align: center;
       padding: 2rem;
       animation: fadeIn 0.6s ease-out;
       position: relative;
-      z-index: 1;
     }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(12px); }
-      to   { opacity: 1; transform: translateY(0); }
     }
 
     .avatar {
       width: 160px;
       height: 160px;
       border-radius: 50%;
-      object-fit: cover;
-      box-shadow: 0 0 24px var(--color-primary-glow);
+      box-shadow: 0 0 0 4px var(--color-bg), 0 0 0 8px var(--color-primary-glow), 0 0 24px var(--color-primary-glow);
       transition: box-shadow 0.3s ease;
-      cursor: pointer;
     }
-
-    .avatar:hover {
-      box-shadow: 0 0 40px var(--color-primary-glow), 0 0 80px rgba(139, 92, 246, 0.15);
-    }
+    .avatar:hover { box-shadow: 0 0 0 4px var(--color-bg), 0 0 0 8px var(--color-primary), 0 0 40px var(--color-primary-glow), 0 0 80px var(--color-primary-glow); }
 
     h1 {
       margin-top: 1.25rem;
       font-size: 2.5rem;
-      font-weight: 700;
       letter-spacing: -0.02em;
+      text-shadow: -1px 0 var(--color-pink), 1px 0 var(--color-indigo), 0 0 18px var(--color-primary-glow);
     }
 
     .bio {
@@ -125,6 +100,7 @@
       font-size: 1.1rem;
       color: var(--color-muted);
     }
+
 
     .cursor {
       display: inline-block;
@@ -135,10 +111,7 @@
       vertical-align: text-bottom;
       animation: blink 0.6s step-end infinite;
     }
-
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
+    @keyframes blink { 50% { opacity: 0; } }
 
     nav {
       margin-top: 1.75rem;
@@ -147,83 +120,44 @@
       justify-content: center;
       flex-wrap: wrap;
     }
-
-    nav + nav {
-      margin-top: 1rem;
-    }
+    nav + nav { margin-top: 1rem; }
 
     nav a {
+      display: inline-flex;
       color: var(--color-muted);
       transition: color 0.2s ease, transform 0.2s ease;
-      display: inline-flex;
     }
-
-    nav a:hover {
+    nav a:hover, nav a:focus-visible {
       color: var(--color-primary);
       transform: translateY(-2px);
     }
+    nav a:focus-visible { outline: none; }
 
-    nav a svg {
+    nav svg {
       width: 26px;
       height: 26px;
       fill: currentColor;
     }
 
     .bubble-hint {
-      position: fixed;
-      bottom: 1.25rem;
-      left: 0;
-      right: 0;
-      text-align: center;
       font-style: italic;
       font-size: 1.14rem;
+      position: fixed;
+      bottom: 1.25rem;
+      inset-inline: 0;
+      text-align: center;
       color: #f0e6ff;
-      text-shadow:
-        0 0 20px rgba(191, 102, 255, 0.8),
-        0 0 40px rgba(128, 51, 217, 0.5),
-        0 0 80px rgba(128, 51, 217, 0.3),
-        0 0 120px rgba(128, 51, 217, 0.15);
-      z-index: 3;
+      text-shadow: 0 0 20px var(--color-neon), 0 0 40px var(--color-neon-deep), 0 0 80px var(--color-primary-glow);
       pointer-events: none;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.25s ease;
+      will-change: opacity;
     }
-
-    .bubble-hint.visible {
-      opacity: 0.85;
-    }
-
-    /* Screen shake */
-    @keyframes shake {
-      0%, 100% { transform: translate(0, 0); }
-      10% { transform: translate(-4px, 2px); }
-      20% { transform: translate(4px, -2px); }
-      30% { transform: translate(-3px, -3px); }
-      40% { transform: translate(3px, 3px); }
-      50% { transform: translate(-2px, 4px); }
-      60% { transform: translate(2px, -4px); }
-      70% { transform: translate(-3px, 2px); }
-      80% { transform: translate(3px, -2px); }
-      90% { transform: translate(-2px, 3px); }
-    }
-
-    .shake {
-      animation: shake 0.5s ease-in-out;
-    }
-
+    .bubble-hint.visible { opacity: 0.85; }
   </style>
 </head>
 <body>
-  <!-- Lava lamp canvas -->
   <canvas class="lava-canvas" id="lava"></canvas>
-
-  <!-- Noise texture -->
-  <svg class="noise" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-    <filter id="noiseFilter">
-      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
-    </filter>
-    <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
-  </svg>
 
   <main class="container">
     <img class="avatar" src="img/murfalo.png" alt="murfalo — dog in purple hoodie and sunglasses" width="160" height="160" draggable="false">
@@ -232,59 +166,59 @@
 
     <nav aria-label="Social links">
       <!-- Email -->
-      <a href="#" class="email-link" aria-label="Email">
+      <a href="mailto:" class="email-link" aria-label="Email" data-hint="send me an email">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
       </a>
 
       <!-- GitHub -->
-      <a href="https://github.com/murfalo" rel="me" aria-label="GitHub">
+      <a href="https://github.com/murfalo" rel="me" aria-label="GitHub" data-hint="explore my GitHub">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.337-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
       </a>
 
       <!-- Google Scholar -->
-      <a href="https://scholar.google.com/citations?user=zC_z7igAAAAJ" aria-label="Google Scholar">
+      <a href="https://scholar.google.com" data-url="https://scholar.google.com/citations?user=zC_z7igAAAAJ" aria-label="Google Scholar" data-hint="read my research">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 24a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm0-2a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/><path d="m21.5 10-9.5-8-9.5 8h5.5v4h2v-4z"/></svg>
       </a>
 
       <!-- PDB -->
-      <a href="https://www.rcsb.org" class="pdb-link" aria-label="PDB">
+      <a href="https://www.rcsb.org" class="pdb-link" aria-label="PDB" data-hint="inspect my structures">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 6.5 18 6.5 12 17.5Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="6.5" r="3.5"/><circle cx="18" cy="6.5" r="3.5"/><circle cx="12" cy="17.5" r="3.5"/></svg>
       </a>
 
       <!-- LinkedIn -->
-      <a href="https://www.linkedin.com/in/murfalo" rel="me" aria-label="LinkedIn">
+      <a href="https://www.linkedin.com/in/murfalo" rel="me" aria-label="LinkedIn" data-hint="connect on LinkedIn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
       </a>
 
       <!-- Twitter / X -->
-      <a href="https://twitter.com/mvrfalo" rel="me" aria-label="Twitter">
+      <a href="https://twitter.com/mvrfalo" rel="me" aria-label="Twitter" data-hint="follow me on X">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
       </a>
 
       <!-- Instagram -->
-      <a href="https://instagram.com/mvrfalo" rel="me" aria-label="Instagram">
+      <a href="https://instagram.com/mvrfalo" rel="me" aria-label="Instagram" data-hint="peek at my Instagram">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
       </a>
     </nav>
 
     <nav aria-label="Media links">
       <!-- MyAnimeList -->
-      <a href="https://myanimelist.net/profile/murfalo" rel="me" aria-label="MyAnimeList">
+      <a href="https://myanimelist.net/profile/murfalo" rel="me" aria-label="MyAnimeList" data-hint="お前はもう見ている">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14.921 6.479c-.82 0-3.683 0-4.947 3.156-.662 1.652-.986 4.812.876 7.886l1.934-1.41s-.767-1.095-1.083-3.191h2.897l.022 3.19h2.604V8.835h-2.581v2.043l-2.46-.023s.413-2.408 2.877-2.336h2.454l-.572-2.04ZM0 6.528v9.624h2.348v-5.84l2.031 2.664 2.047-2.652v5.828h2.336V6.528H6.437L4.368 9.474 2.31 6.528Zm18.447.022v9.583h5.022L24 14.09h-3.232V6.55Z"/></svg>
       </a>
 
       <!-- Album of the Year -->
-      <a href="https://www.albumoftheyear.org/user/murfalo/" rel="me" aria-label="AOTY">
+      <a href="https://www.albumoftheyear.org/user/murfalo" rel="me" aria-label="AOTY" data-hint="hear what I'm listening to">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.598 7.849a.4.4 0 0 0-.182.188c-.034.074-.593 1.852-1.237 3.96L0 15.827l.142.142c.149.154.576.233.718.142.04-.028.194-.45.342-.929l.262-.877h3.009l.25.855c.143.467.297.888.348.923.245.193.81-.023.81-.308 0-.142-2.086-7.026-2.308-7.63-.057-.142-.143-.256-.234-.302-.17-.08-.575-.074-.74.006m1.009 3.539.61 2.062-1.231.017c-.673.006-1.237.006-1.248-.005-.029-.029 1.196-4.143 1.236-4.143.017 0 .302.929.633 2.069m4.826-3.442c-.7.182-1.19.621-1.447 1.288-.103.262-.109.467-.109 2.792s.006 2.53.109 2.792c.342.9 1.15 1.396 2.273 1.396 1.34 0 2.217-.638 2.433-1.767.074-.393.074-4.45 0-4.843-.216-1.145-1.105-1.772-2.473-1.76-.222 0-.575.045-.786.102m1.584.906c.32.165.57.467.678.82.126.433.126 4.274 0 4.707-.228.77-1.054 1.151-1.926.9-.427-.125-.69-.359-.837-.752-.109-.296-.114-.433-.114-2.501 0-2.052.005-2.211.114-2.496.142-.382.364-.593.752-.735.393-.137 1.003-.114 1.333.057m2.57-.912c-.131.148-.125.536.006.655.09.08.256.097 1.082.097h.98v7.288l.126.086c.216.153.666.096.797-.103.023-.034.046-1.687.046-3.67v-3.6h.991c.963 0 .998-.006 1.083-.126a.6.6 0 0 0 .091-.302.6.6 0 0 0-.091-.302l-.085-.125h-2.468c-2.319 0-2.473.005-2.558.102m5.829-.028a.7.7 0 0 0-.222.216c-.08.143-.04.222 1.15 2.45l1.237 2.302v1.51c0 .832.023 1.539.046 1.573.142.21.627.262.809.08.108-.108.114-.188.114-1.641V12.88l1.225-2.279C23.447 9.348 24 8.288 24 8.248c0-.046-.074-.154-.165-.245-.211-.21-.502-.228-.673-.04-.062.074-.547.974-1.07 2.011-.525 1.032-.975 1.904-.998 1.926-.023.029-.484-.82-1.026-1.88-.54-1.06-1.037-1.983-1.1-2.057-.13-.137-.336-.16-.552-.051"/></svg>
       </a>
 
       <!-- Letterboxd -->
-      <a href="https://letterboxd.com/murfalo/" rel="me" aria-label="Letterboxd">
+      <a href="https://letterboxd.com/murfalo" rel="me" aria-label="Letterboxd" data-hint="see what I'm watching">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.224 14.352a4.447 4.447 0 0 1-3.775 2.092C1.992 16.444 0 14.454 0 12s1.992-4.444 4.45-4.444c1.592 0 2.988.836 3.774 2.092-.427.682-.673 1.488-.673 2.352s.246 1.67.673 2.352zM15.101 12c0-.864.247-1.67.674-2.352-.786-1.256-2.183-2.092-3.775-2.092s-2.989.836-3.775 2.092c.427.682.674 1.488.674 2.352s-.247 1.67-.674 2.352c.786 1.256 2.183 2.092 3.775 2.092s2.989-.836 3.775-2.092A4.42 4.42 0 0 1 15.1 12zm4.45-4.444a4.447 4.447 0 0 0-3.775 2.092c.427.682.673 1.488.673 2.352s-.246 1.67-.673 2.352a4.447 4.447 0 0 0 3.775 2.092C22.008 16.444 24 14.454 24 12s-1.992-4.444-4.45-4.444z"/></svg>
       </a>
 
       <!-- StoryGraph -->
-      <a href="https://app.thestorygraph.com/profiles/murfalo" rel="me" aria-label="StoryGraph">
+      <a href="https://app.thestorygraph.com/profiles/murfalo" rel="me" aria-label="StoryGraph" data-hint="enjoy what I'm reading">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.1722.6246a.6788.6788 0 0 0-.1314.0252L14.095 1.818c-.3504.1039-.545.4673-.4413.8178l5.1137 17.3544c.104.3505.4673.5452.8178.4414l3.9455-1.1553c.3504-.1038.5451-.4673.4413-.8178L18.8584 1.0911a.6522.6522 0 0 0-.6862-.4665zM.662 1.0522c-.3634 0-.6619.2986-.6619.662v18.0944c0 .3634.2985.6619.662.6619h4.1143c.3634 0 .6619-.2985.6619-.662V1.7143c0-.3634-.2985-.662-.6619-.662zm6.9438 0c-.3634 0-.662.2986-.662.662v18.0944c0 .3634.2986.6619.662.6619H11.72c.3634 0 .649-.2985.662-.662V1.7143c0-.3634-.2986-.662-.662-.662zM.3634 21.431c-.1947 0-.3634.1558-.3634.3634v1.2202c0 .1948.1558.3635.3634.3635h23.2712c.1947 0 .3635-.1558.3635-.3635v-1.2202c0-.1947-.1557-.3634-.3635-.3634z"/></svg>
       </a>
     </nav>
@@ -292,8 +226,11 @@
   <p class="bubble-hint" id="bubble-hint"></p>
 
   <script>
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+
     // --- Typewriter ---
-    (() => {
+    (async () => {
       const words = [
         "Debbie Marks impression", "domain expansion", "search history",
         "equivalent exchange", "Terraria mods", "spaghetti code", "Boston accent",
@@ -301,54 +238,30 @@
         "evolutionary couplings", "MSAs", "crystal structures", "commits", "unread papers",
         "snobby reviews", "cool stuff", "socials", "sludge", "slop", "drip"
       ];
-
       const el = document.getElementById("typed");
       let queue = [];
-      let i = 0;
-
-      function shuffle(arr) {
-        for (let j = arr.length - 1; j > 0; j--) {
-          const k = Math.floor(Math.random() * (j + 1));
-          [arr[j], arr[k]] = [arr[k], arr[j]];
-        }
-        return arr;
+      for (;;) {
+        if (!queue.length) queue = words.map(w => [Math.random(), w]).sort((a, b) => a[0] - b[0]).map(p => p[1]);
+        const word = queue.pop();
+        for (let i = 1; i <= word.length; i++) { el.textContent = word.slice(0, i); await sleep(55); }
+        await sleep(1500);
+        for (let i = word.length - 1; i >= 0; i--) { el.textContent = word.slice(0, i); await sleep(35); }
+        await sleep(300);
       }
-
-      function next() {
-        if (queue.length === 0) queue = shuffle([...words]);
-        return queue.pop();
-      }
-
-      function typeWord(word) {
-        if (i <= word.length) {
-          el.textContent = word.slice(0, i);
-          i++;
-          setTimeout(() => typeWord(word), 55);
-        } else {
-          setTimeout(() => deleteWord(word), 1500);
-        }
-      }
-
-      function deleteWord(word) {
-        if (i > 0) {
-          i--;
-          el.textContent = word.slice(0, i);
-          setTimeout(() => deleteWord(word), 35);
-        } else {
-          setTimeout(() => { i = 0; typeWord(next()); }, 300);
-        }
-      }
-
-      typeWord(next());
     })();
 
     // --- Interactive lava lamp (WebGL metaball shader) + Easter eggs ---
     (() => {
       const canvas = document.getElementById("lava");
-      const gl = canvas.getContext("webgl");
+      const gl = canvas.getContext("webgl", { alpha: false, antialias: false, depth: false, desynchronized: true });
+      // Debug: ?fps shows a frame-time readout, ?scale=N overrides the render resolution
+      const debug = new URLSearchParams(location.search);
       if (!gl) { console.warn("WebGL not available — lava lamp disabled"); return; }
+      const hintEl = document.getElementById("bubble-hint");
 
-      // --- Constants ---
+      // --- Constants (physics is tuned per 60 Hz tick) ---
+      const STEP = 1000 / 60;
+      const MAX_SLOTS = 64;
       const SPEED_CLAMP = 3.5;
       const SPEED_CLAMP_FLYING = 14;
       const DAMPING = 0.984;
@@ -378,9 +291,6 @@
       const BLOB_FADE_MIN = 2;
       const BLOB_FADE_RATE_GOHOME = 0.97;
 
-      const SPEW_INTERVAL = 4;
-      const MAX_BLOBS = 48;
-
       const MOUSE_SPEED_DECAY = 0.9;
       const MOUSE_PUSH_RANGE = 400;
       const MOUSE_REPEL_RANGE = 900;
@@ -390,18 +300,10 @@
       const HINT_FADE_MS = 250;
       const HINT_DISPLAY_MS = 2500;
 
-      const SPIN_MAX = 20;
-      const SPIN_ACCEL = 0.6;
-      const SPIN_DECEL = 0.985;
-      const HINT_AT_FRAME = [60, 150, 240];
-
-      function smoothstep01(x) {
-        const t = x < 0 ? 0 : x > 1 ? 1 : x;
-        return t * t * (3 - 2 * t);
-      }
+      const smoothstep01 = x => { const t = Math.min(Math.max(x, 0), 1); return t * t * (3 - 2 * t); };
 
       // --- State ---
-      let W, H;
+      let W, H, dpr;
 
       // Input
       let mx = null, my = null;
@@ -410,9 +312,11 @@
       let isTouch = false;
       let cursorRadius = CURSOR_R_REST;
       let cursorRadiusVel = 0;
-      let cursorTrailX = null, cursorTrailY = null;
+      // Cursor blob + its lagging trail, sampled each physics step (px/py = previous step, for interpolation)
+      const cur = { x: 0, y: 0, px: 0, py: 0 }, trail = { x: 0, y: 0, px: 0, py: 0 };
+      let cursorLive = false;
 
-      // Animation time
+      // Animation time (in 60 Hz ticks)
       let time = 0;
       let lastInteractionTime = 0;
 
@@ -421,10 +325,6 @@
       let popFrame = 0;
       let hasReassembled = false;
       let reassembleHintShown = false;
-
-      // Party mode
-      let partyMode = false;
-      let hueOffset = 0;
 
       // Idle
       let idleMode = false;
@@ -435,245 +335,265 @@
       let idleRadiusFactor = 1.0;
       let idleHinted = false;
 
-      // Avatar spin
-      let isSpinning = false;
-      let avatarHeld = false;
-      let spinAngle = 0;
-      let spinSpeed = 0;
-      let spinResetTimer = 0;
-      let spewCooldown = 0;
-      let spewCount = 0;
-      let vomitHintIndex = 0;
-      let spinHoldFrames = 0;
-      let vomitReady = false;
-
       // Shake
       let lastShakeTime = 0;
 
       // Idle formation shapes (normalized offsets from center, y-down screen coords)
       const shapes = [
         // Heart
-        [
-          {x: 0, y: -0.08},
-          {x: -0.15, y: -0.22},
-          {x: -0.27, y: -0.08},
-          {x: -0.17, y: 0.1},
-          {x: 0, y: 0.27},
-          {x: 0.17, y: 0.1},
-          {x: 0.27, y: -0.08},
-          {x: 0.15, y: -0.22},
-        ],
+        [[0, -0.08], [-0.15, -0.22], [-0.27, -0.08], [-0.17, 0.1], [0, 0.27], [0.17, 0.1], [0.27, -0.08], [0.15, -0.22]],
         // Letter M
-        [
-          {x: -0.25, y: 0.2},
-          {x: -0.25, y: -0.2},
-          {x: -0.1, y: 0.02},
-          {x: 0, y: -0.12},
-          {x: 0.1, y: 0.02},
-          {x: 0.25, y: -0.2},
-          {x: 0.25, y: 0.2},
-          {x: 0, y: 0.2},
-        ],
+        [[-0.25, 0.2], [-0.25, -0.2], [-0.1, 0.02], [0, -0.12], [0.1, 0.02], [0.25, -0.2], [0.25, 0.2], [0, 0.2]],
         // Smiley
-        [
-          {x: -0.1, y: -0.12},
-          {x: 0.1, y: -0.12},
-          {x: -0.2, y: 0.05},
-          {x: -0.1, y: 0.16},
-          {x: 0, y: 0.19},
-          {x: 0.1, y: 0.16},
-          {x: 0.2, y: 0.05},
-          {x: 0, y: -0.25},
-        ],
+        [[-0.1, -0.12], [0.1, -0.12], [-0.2, 0.05], [-0.1, 0.16], [0, 0.19], [0.1, 0.16], [0.2, 0.05], [0, -0.25]],
       ];
 
-      function resize() {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        W = window.innerWidth;
-        H = window.innerHeight;
-        canvas.width = W * dpr;
-        canvas.height = H * dpr;
-        gl.viewport(0, 0, canvas.width, canvas.height);
-      }
-      resize();
-      window.addEventListener("resize", resize);
+      // --- Hints: priority queue (0 = top, 1 = high, 2 = normal, 3 = low; only shown when nothing else is) ---
+      let hintQueue = [], hintCur = null, hovering = false, hintTimer = 0;
 
+      function setHint(text) { hintEl.textContent = text; hintEl.classList.add("visible"); }
+
+      function hideHint() {
+        clearTimeout(hintTimer);
+        hintEl.classList.remove("visible");
+        if (hintCur) hintCur.pri = 99; // fading out: anything may replace it
+        hintTimer = setTimeout(() => { hintCur = null; nextHint(); }, HINT_FADE_MS);
+      }
+
+      function nextHint() {
+        if (hintCur || hovering || !hintQueue.length) return;
+        hintCur = hintQueue.shift();
+        setHint(hintCur.text);
+        hintTimer = setTimeout(hideHint, HINT_DISPLAY_MS);
+      }
+
+      function showHint(text, pri = 2) {
+        if (pri === 3 && (hintCur || hintQueue.length)) return;
+        if (pri === 0) hintQueue = hintQueue.filter(h => h.pri === 0);
+        hintQueue.push({ text, pri });
+        hintQueue.sort((a, b) => a.pri - b.pri);
+        if (!hintCur) nextHint();
+        else if (hintCur.pri !== 99 && hintQueue[0].pri <= hintCur.pri) hideHint();
+      }
+
+      // Link hover hints pre-empt the queue; an interrupted hint resumes afterwards
+      function hoverHint(text) {
+        clearTimeout(hintTimer);
+        if (hintCur && hintCur.pri !== 99) hintQueue.unshift(hintCur);
+        hintCur = null;
+        hovering = true;
+        const showing = parseFloat(getComputedStyle(hintEl).opacity) > 0.01;
+        hintEl.classList.remove("visible");
+        hintTimer = setTimeout(() => setHint(text), showing ? HINT_FADE_MS : 0);
+      }
+      function unhoverHint() { hovering = false; hideHint(); }
+
+      document.querySelectorAll("[data-hint]").forEach(a => {
+        const enter = () => hoverHint(a.dataset.hint);
+        a.addEventListener("mouseenter", enter);
+        a.addEventListener("focus", enter);
+        a.addEventListener("mouseleave", unhoverHint);
+        a.addEventListener("blur", unhoverHint);
+      });
+
+      // --- Input (pointer events cover mouse, touch and pen) ---
       const welcomeBacks = ["welcome back!", "oh hi!", "you're back!", "missed you :)", "whoa! didn't see you there", "act natural"];
       function recordInteraction() {
         lastInteractionTime = time;
-        if (idleHinted) {
-          idleHinted = false;
-          const msg = welcomeBacks[Math.floor(Math.random() * welcomeBacks.length)];
-          showHint(msg, 1);
-        }
-        if (idleMode) idleMode = false;
+        if (idleHinted) { idleHinted = false; showHint(pick(welcomeBacks), 1); }
+        idleMode = false;
       }
 
-      window.addEventListener("mousemove", e => {
-        if (mx !== null) {
-          const dx = e.clientX - mx;
-          const dy = e.clientY - my;
-          mouseSpeed = Math.sqrt(dx * dx + dy * dy);
-        }
+      function clearPointer() { mx = my = null; mouseSpeed = 0; }
+
+      addEventListener("pointermove", e => {
+        if (!e.isPrimary) return;
         mx = e.clientX; my = e.clientY;
         recordInteraction();
       });
-      window.addEventListener("touchmove", e => {
-        const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
-        if (mx !== null) {
-          const dx = tx - mx, dy = ty - my;
-          mouseSpeed = Math.sqrt(dx * dx + dy * dy);
-        }
-        mx = tx; my = ty;
-        recordInteraction();
-      }, { passive: true });
-      window.addEventListener("mouseleave", () => {
-        mx = null; my = null; mouseSpeed = 0; mouseDown = false;
-        cursorTrailX = null; cursorTrailY = null;
-      });
-      window.addEventListener("mousedown", () => { mouseDown = true; recordInteraction(); });
-      window.addEventListener("mouseup", () => { mouseDown = false; });
-      window.addEventListener("touchstart", e => {
-        isTouch = true;
+      addEventListener("pointerdown", e => {
+        if (!e.isPrimary) return;
+        isTouch = e.pointerType === "touch";
         mouseDown = true;
-        const tx = e.touches[0].clientX, ty = e.touches[0].clientY;
-        mx = tx; my = ty;
+        mx = e.clientX; my = e.clientY;
         recordInteraction();
-      }, { passive: true });
-      window.addEventListener("touchend", () => { mouseDown = false; isTouch = false; });
+      });
+      const release = () => {
+        mouseDown = false;
+        if (isTouch) clearPointer();
+      };
+      addEventListener("pointerup", release);
+      addEventListener("pointercancel", release);
+      document.documentElement.addEventListener("mouseleave", () => { mouseDown = false; clearPointer(); });
+      addEventListener("keydown", recordInteraction);
 
-      // Keydown for idle tracking
-      window.addEventListener("keydown", () => { recordInteraction(); });
+      // --- Shake to scatter (mobile) ---
+      function handleMotion(e) {
+        const acc = e.acceleration || e.accelerationIncludingGravity;
+        if (!acc || acc.x === null) return;
+        if (Math.hypot(acc.x, acc.y, acc.z) > (e.acceleration ? 15 : 25) && Date.now() - lastShakeTime > 2000) {
+          lastShakeTime = Date.now();
+          recordInteraction();
+          for (const b of blobs) {
+            const angle = Math.random() * Math.PI * 2, speed = 5 + Math.random() * 3;
+            b.vx = Math.cos(angle) * speed;
+            b.vy = Math.sin(angle) * speed;
+          }
+          showHint("earthquake!");
+        }
+      }
+      if (typeof DeviceMotionEvent !== "undefined") {
+        if (typeof DeviceMotionEvent.requestPermission === "function") {
+          // iOS 13+ needs permission from a user gesture
+          addEventListener("touchstart", () => {
+            DeviceMotionEvent.requestPermission().then(s => s === "granted" && addEventListener("devicemotion", handleMotion)).catch(() => {});
+          }, { once: true, passive: true });
+        } else addEventListener("devicemotion", handleMotion);
+      }
 
-      // --- Shaders ---
-      const vsSource = `
-        attribute vec2 a_pos;
-        void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+      // --- Renderer ---
+      // The metaball field (the per-blob loop) is smooth, so it's computed at half resolution into a
+      // half-float texture; the neon shading then runs at full resolution from one bilinear read.
+      // Without half-float render targets it falls back to computing the field per pixel.
+      const FIELD_SCALE = 2; // device px per field texel, each axis
+      const hf = gl.getExtension("OES_texture_half_float");
+      let fbo = null;
+      if (hf && gl.getExtension("OES_texture_half_float_linear")) {
+        gl.getExtension("EXT_color_buffer_half_float");
+        gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+        for (const k of [gl.TEXTURE_MIN_FILTER, gl.TEXTURE_MAG_FILTER]) gl.texParameteri(gl.TEXTURE_2D, k, gl.LINEAR);
+        for (const k of [gl.TEXTURE_WRAP_S, gl.TEXTURE_WRAP_T]) gl.texParameteri(gl.TEXTURE_2D, k, gl.CLAMP_TO_EDGE);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, hf.HALF_FLOAT_OES, null);
+        fbo = gl.createFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, gl.getParameter(gl.TEXTURE_BINDING_2D), 0);
+        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) fbo = null;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      }
+
+      const common = `
+        precision highp float;
+        uniform vec4 u_blobs[${MAX_SLOTS}]; // x, y, r² (device px), heat 0..1
+        uniform int u_count;
+
+        // Metaball field at p, and the field-weighted heat of the wax there
+        vec2 fieldAt(vec2 p) {
+          float field = 0.0, hsum = 0.0;
+          for (int i = 0; i < ${MAX_SLOTS}; i++) {
+            if (i >= u_count) break;
+            vec4 b = u_blobs[i];
+            vec2 d = p - b.xy;
+            float w = b.z / max(dot(d, d), 1.0);
+            field += w;
+            hsum += w * b.w;
+          }
+          return vec2(min(field, 1000.0), hsum / max(field, 0.001)); // clamped to stay finite in half floats
+        }
       `;
 
-      const fsSource = `
-        precision highp float;
+      const fieldSource = common + `
+        void main() { gl_FragColor = vec4(fieldAt(gl_FragCoord.xy * ${FIELD_SCALE}.0), 0.0, 1.0); }
+      `;
+
+      const shadeSource = common + `
+        uniform sampler2D u_field;
+        uniform vec2 u_fieldRes; // field texture size in device px
+        uniform vec2 u_res;
         uniform float u_time;
-        uniform float u_hue;
-        uniform vec3 u_blobs[64];
+        uniform float u_dpr;
 
-        vec3 rgb2hsv(vec3 c) {
-          vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-          vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
-          vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-          float d = q.x - min(q.w, q.y);
-          float e = 1.0e-10;
-          return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
-        }
-
-        vec3 hsv2rgb(vec3 c) {
-          vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-          vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-          return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
-        }
-
-        float hash(vec2 p) {
-          return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-        }
+        // Ordered 4x4 Bayer threshold in [0, 1)
+        float bayer2(vec2 a) { a = floor(a); return fract(a.x * 0.5 + a.y * a.y * 0.75); }
+        float bayer4(vec2 a) { return bayer2(a * 0.5) * 0.25 + bayer2(a); }
 
         void main() {
           vec2 uv = gl_FragCoord.xy;
-          float field = 0.0;
+          vec2 f = ${fbo ? "texture2D(u_field, uv / u_fieldRes).xy" : "fieldAt(uv)"};
+          float field = f.x;
 
-          for (int i = 0; i < 64; i++) {
-            vec2 delta = uv - u_blobs[i].xy;
-            float r = u_blobs[i].z;
-            float distSq = dot(delta, delta);
-            field += (r * r) / max(distSq, 1.0);
-          }
-
-          vec3 bg = vec3(0.094, 0.094, 0.106);
-          float threshold = 0.65;
-
-          float dist = abs(field - threshold);
+          float dist = abs(field - 0.65);
           float edge = exp(-dist * 35.0);
           float glow = exp(-dist * 14.0) * 0.3;
-          float interior = smoothstep(threshold - 0.02, threshold + 0.02, field);
+          float interior = smoothstep(0.63, 0.67, field);
+          float depth = mix(1.3, 0.8, smoothstep(0.65, 3.0, field)); // brighter rim, darker core
 
-          vec3 neonBright = vec3(0.75, 0.40, 1.0);
-          vec3 neonGlow = vec3(0.50, 0.20, 0.85);
-          vec3 interiorColor = vec3(0.12, 0.06, 0.22);
+          // Dithered backdrop: faint purple bloom toward the center, crushed to 2px Bayer dots
+          float th = bayer4(uv / (2.0 * u_dpr));
+          float bloom = 1.0 - length((uv - 0.5 * u_res) / u_res.y);
+          vec3 col = mix(vec3(0.055, 0.047, 0.078), vec3(0.11, 0.07, 0.17), step(th, bloom * 0.35));
+          // Lamp bulb: dithered glow rising from the bottom edge
+          float heat = 1.0 - smoothstep(0.0, 1.0, uv.y / u_res.y);
+          col = mix(col, vec3(0.16, 0.06, 0.22), step(th, heat * heat * heat * 0.5));
+          col = mix(col, vec3(0.12, 0.06, 0.22), interior * 0.35 * depth);
+          // Fast-moving wax runs hot: brighter, pinker rim that cools as it settles
+          float h = clamp(f.y, 0.0, 1.0) * 0.3;
+          col += vec3(0.50, 0.20, 0.85) * glow * (1.0 + h);
+          col += mix(vec3(0.75, 0.40, 1.0), vec3(0.95, 0.55, 0.95), h) * edge * (1.5 + 0.5 * h);
+          col *= mix(1.0, 0.9 + 0.1 * sin(u_time * 2.0), edge);
+          col += (th - 0.5) * 0.02; // ordered dither instead of film grain
 
-          if (u_hue > 0.001) {
-            vec3 hb = rgb2hsv(neonBright);
-            hb.x = fract(hb.x + u_hue);
-            neonBright = hsv2rgb(hb);
-
-            vec3 hg = rgb2hsv(neonGlow);
-            hg.x = fract(hg.x + u_hue);
-            neonGlow = hsv2rgb(hg);
-
-            vec3 hi = rgb2hsv(interiorColor);
-            hi.x = fract(hi.x + u_hue);
-            interiorColor = hsv2rgb(hi);
-          }
-
-          vec3 col = bg;
-          col = mix(col, interiorColor, interior * 0.35);
-          col += neonGlow * glow;
-          col += neonBright * edge * 1.5;
-
-          float pulseBright = 0.9 + 0.1 * sin(u_time * 2.0);
-          col *= mix(1.0, pulseBright, edge);
-
-          float dither = (hash(gl_FragCoord.xy + u_time) - 0.5) / 255.0 * 2.0;
-          col += dither;
+          // CRT glass: scanline every 4 CSS px + vignette toward the corners
+          col *= 1.0 - 0.08 * step(3.0, mod(uv.y / u_dpr, 4.0));
+          col *= 1.0 - 0.35 * clamp((length(uv / u_res - 0.5) * 1.4142 - 0.65) / 0.35, 0.0, 1.0);
 
           gl_FragColor = vec4(col, 1.0);
         }
       `;
 
-      function compileShader(src, type) {
-        const s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-          console.error(gl.getShaderInfoLog(s));
-          return null;
+      function program(fsSource) {
+        const prog = gl.createProgram();
+        for (const [type, src] of [[gl.VERTEX_SHADER, "attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }"], [gl.FRAGMENT_SHADER, fsSource]]) {
+          const sh = gl.createShader(type);
+          gl.shaderSource(sh, src);
+          gl.compileShader(sh);
+          if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(sh));
+          gl.attachShader(prog, sh);
         }
-        return s;
+        gl.bindAttribLocation(prog, 0, "p");
+        gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(prog));
+        const u = {};
+        for (const name of ["u_blobs", "u_count", "u_fieldRes", "u_res", "u_time", "u_dpr"]) u[name] = gl.getUniformLocation(prog, name);
+        return { prog, u };
       }
-
-      const vs = compileShader(vsSource, gl.VERTEX_SHADER);
-      const fs = compileShader(fsSource, gl.FRAGMENT_SHADER);
-      const prog = gl.createProgram();
-      gl.attachShader(prog, vs);
-      gl.attachShader(prog, fs);
-      gl.linkProgram(prog);
-      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-        console.error(gl.getProgramInfoLog(prog));
-        return;
-      }
-      gl.useProgram(prog);
+      const shade = program(shadeSource);
+      const fieldPass = fbo && program(fieldSource);
 
       // Fullscreen quad
-      const buf = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-      const aPos = gl.getAttribLocation(prog, "a_pos");
-      gl.enableVertexAttribArray(aPos);
-      gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
 
-      // Uniform locations
-      const uTime = gl.getUniformLocation(prog, "u_time");
-      const uHue = gl.getUniformLocation(prog, "u_hue");
-      const uBlobs = [];
-      for (let i = 0; i < 64; i++) {
-        uBlobs.push(gl.getUniformLocation(prog, `u_blobs[${i}]`));
+      const blobData = new Float32Array(MAX_SLOTS * 4);
+      let fieldW = 0, fieldH = 0;
+
+      function resize() {
+        dpr = +debug.get("scale") || Math.min(window.devicePixelRatio || 1, 2);
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = W * dpr;
+        canvas.height = H * dpr;
+        gl.useProgram(shade.prog);
+        gl.uniform2f(shade.u.u_res, canvas.width, canvas.height);
+        gl.uniform1f(shade.u.u_dpr, dpr);
+        if (fbo) {
+          fieldW = Math.ceil(canvas.width / FIELD_SCALE);
+          fieldH = Math.ceil(canvas.height / FIELD_SCALE);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, fieldW, fieldH, 0, gl.RGBA, hf.HALF_FLOAT_OES, null);
+          gl.uniform2f(shade.u.u_fieldRes, fieldW * FIELD_SCALE, fieldH * FIELD_SCALE);
+        }
       }
+      resize();
+      addEventListener("resize", resize);
 
       // --- Blob physics: 3 large + 5 medium = 8 blobs ---
       const ORIGINAL_COUNT = 8;
       // Scale blob radii for smaller viewports (tuned for ~900px min dimension)
       const viewScale = Math.min(1, Math.min(W, H) / 900);
-      function makeBlob(rMin, rMax) {
+      function makeBlob(rMin, rMax, x, y) {
         return {
-          x: 0, y: 0, vx: 0, vy: 0,
+          x, y, px: x, py: y, vx: 0, vy: 0, heat: 0, freeFlying: false,
           r: (rMin + Math.random() * (rMax - rMin)) * viewScale,
           phaseX: Math.random() * Math.PI * 2,
           phaseY: Math.random() * Math.PI * 2,
@@ -682,293 +602,35 @@
           buoyancy: (Math.random() - 0.5) * 0.002,
         };
       }
-      const blobs = [
-        ...Array.from({length: 3}, () => makeBlob(90, 128)),   // large
-        ...Array.from({length: 5}, () => makeBlob(49, 83)),    // medium
-      ];
-      // Store original radii for reassembly reset
+      // 3 large + 5 medium, starting in a ring around the center card
+      const blobs = Array.from({ length: ORIGINAL_COUNT }, (_, i) => {
+        const angle = (i / ORIGINAL_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        const dist = 80 + Math.random() * 60;
+        return makeBlob(i < 3 ? 90 : 49, i < 3 ? 128 : 83, W / 2 + Math.cos(angle) * dist, H / 2 + Math.sin(angle) * dist);
+      });
       const originalRadii = blobs.map(b => b.r);
 
-      // Start blobs in a ring around center card
-      {
-        const cx = window.innerWidth / 2;
-        const cy = window.innerHeight / 2;
-        for (let i = 0; i < blobs.length; i++) {
-          const angle = (i / blobs.length) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-          const dist = 80 + Math.random() * 60;
-          blobs[i].x = cx + Math.cos(angle) * dist;
-          blobs[i].y = cy + Math.sin(angle) * dist;
-        }
-      }
+      // --- Physics ---
+      function updateCursor() {
+        // Spring-animate cursor metaball radius
+        const targetRadius = (mouseDown ? CURSOR_R_CLICK : CURSOR_R_REST) * viewScale;
+        cursorRadiusVel = (cursorRadiusVel + (targetRadius - cursorRadius) * CURSOR_SPRING_K) * CURSOR_SPRING_DAMP;
+        cursorRadius += cursorRadiusVel;
 
-      const hintEl = document.getElementById("bubble-hint");
-      // Priority queue: lower number = higher priority
-      // 0 = top (pop, avatar), 1 = high (reassemble), 2 = normal, 3 = low (visits)
-      const hintQueue = []; // [{text, pri}]
-      let hintState = "idle"; // "idle" | "visible" | "fading-out"
-      let hintDisplayTimer = 0;
-      let hintFadeTimer = 0;
-      let hintCurrentPri = 99;
-      let socialHintActive = false;
-
-      function showHint(text, pri) {
-        if (pri === undefined) pri = 2;
-        // Top priority: clear everything lower
-        if (pri === 0) {
-          for (let i = hintQueue.length - 1; i >= 0; i--) {
-            if (hintQueue[i].pri > pri) hintQueue.splice(i, 1);
-          }
-        }
-        // Low priority: only queue if nothing is showing and queue is empty
-        if (pri === 3 && (hintState !== "idle" || hintQueue.length > 0)) return;
-        hintQueue.push({text, pri});
-        // Sort by priority (stable — equal priorities keep insertion order)
-        hintQueue.sort((a, b) => a.pri - b.pri);
-        processHintQueue();
-      }
-
-      function showSocialHint(text) {
-        socialHintActive = true;
-        clearTimeout(hintDisplayTimer);
-        clearTimeout(hintFadeTimer);
-        // Save the interrupted hint back to the front of the queue
-        if (hintState === "visible") {
-          hintQueue.unshift({text: hintEl.textContent, pri: hintCurrentPri});
-        }
-        hintState = "idle";
-        hintCurrentPri = 99;
-        // Fade out first if anything is still visible (including mid-fade)
-        if (parseFloat(getComputedStyle(hintEl).opacity) > 0.01) {
-          hintEl.classList.remove("visible");
-          hintFadeTimer = setTimeout(() => {
-            hintEl.textContent = text;
-            hintEl.classList.add("visible");
-          }, HINT_FADE_MS);
-        } else {
-          hintEl.textContent = text;
-          hintEl.classList.add("visible");
-        }
-      }
-
-      function hideSocialHint() {
-        socialHintActive = false;
-        hintEl.classList.remove("visible");
-        clearTimeout(hintFadeTimer);
-        hintFadeTimer = setTimeout(() => {
-          if (!socialHintActive) {
-            hintState = "idle";
-            processHintQueue();
-          }
-        }, HINT_FADE_MS);
-      }
-
-      function processHintQueue() {
-        if (socialHintActive || hintQueue.length === 0) return;
-        const fadeMs = HINT_FADE_MS;
-
-        if (hintState === "idle") {
-          const item = hintQueue.shift();
-          hintEl.textContent = item.text;
-          hintEl.classList.add("visible");
-          hintState = "visible";
-          hintCurrentPri = item.pri;
-          clearTimeout(hintDisplayTimer);
-          hintDisplayTimer = setTimeout(() => {
-            hintEl.classList.remove("visible");
-            hintState = "fading-out";
-            hintCurrentPri = 99;
-            hintFadeTimer = setTimeout(() => {
-              hintState = "idle";
-              processHintQueue();
-            }, fadeMs);
-          }, HINT_DISPLAY_MS);
-        } else if (hintState === "visible") {
-          // Only interrupt if incoming has equal or higher priority
-          if (hintQueue[0].pri <= hintCurrentPri) {
-            clearTimeout(hintDisplayTimer);
-            hintEl.classList.remove("visible");
-            hintState = "fading-out";
-            hintCurrentPri = 99;
-            clearTimeout(hintFadeTimer);
-            hintFadeTimer = setTimeout(() => {
-              hintState = "idle";
-              processHintQueue();
-            }, fadeMs);
-          }
-        }
-      }
-
-      // --- Feature E: Avatar Spin + Vomit Orbs (JS-driven rotation) ---
-      const avatarEl = document.querySelector(".avatar");
-      const vomitHints = ["wheee", "WHEEEEE", "I'm gonna be sick"];
-
-      function spewBlobs() {
-        if (blobs.length >= MAX_BLOBS) return;
-        const rect = avatarEl.getBoundingClientRect();
-        const ax = rect.left + rect.width / 2;
-        const ay = rect.top + rect.height / 2;
-
-        // Sprinkler: direction follows current spin angle
-        const sprayRad = spinAngle * Math.PI / 180;
-        const b = makeBlob(15, 25);
-        b.x = ax;
-        b.y = ay;
-        b.vx = Math.cos(sprayRad) * (12 + Math.random() * 4);
-        b.vy = Math.sin(sprayRad) * (12 + Math.random() * 4);
-        b.freeFlying = true;
-        blobs.push(b);
-        spewCount++;
-      }
-
-      function startSpin(e) {
-        e.stopPropagation();
-        e.preventDefault();
-        recordInteraction();
-        clearTimeout(spinResetTimer);
-        isSpinning = true;
-        avatarHeld = true;
-        spewCooldown = 0;
-      }
-
-      avatarEl.addEventListener("mousedown", startSpin);
-      avatarEl.addEventListener("touchstart", startSpin, { passive: false });
-
-      function stopHold() {
-        if (!avatarHeld) return;
-        avatarHeld = false;
-        // Party mode lingers for 5s after release, then fades
-        clearTimeout(spinResetTimer);
-        spinResetTimer = setTimeout(() => { partyMode = false; }, 5000);
-      }
-      window.addEventListener("mouseup", stopHold);
-      window.addEventListener("touchend", stopHold);
-
-      // --- Feature I: Shake to Scatter (Mobile) ---
-      function handleMotion(e) {
-        const acc = e.acceleration || e.accelerationIncludingGravity;
-        if (!acc || acc.x === null) return;
-        const mag = Math.sqrt(acc.x * acc.x + acc.y * acc.y + acc.z * acc.z);
-        const threshold = e.acceleration ? 15 : 25;
-        if (mag > threshold && Date.now() - lastShakeTime > 2000) {
-          lastShakeTime = Date.now();
-          recordInteraction();
-          for (const b of blobs) {
-            const angle = Math.random() * Math.PI * 2;
-            const speed = 5 + Math.random() * 3;
-            b.vx = Math.cos(angle) * speed;
-            b.vy = Math.sin(angle) * speed;
-          }
-          showHint("earthquake!");
-        }
-      }
-
-      // iOS 13+ needs permission from a user gesture
-      window.addEventListener("touchstart", function reqMotion() {
-        window.removeEventListener("touchstart", reqMotion);
-        if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
-          DeviceMotionEvent.requestPermission().then(state => {
-            if (state === "granted") window.addEventListener("devicemotion", handleMotion);
-          }).catch(() => {});
-        }
-      }, { passive: true });
-      // Non-iOS devices
-      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission !== "function") {
-        window.addEventListener("devicemotion", handleMotion);
-      }
-
-      // --- Physics loop ---
-      function updateAvatarSpin() {
-        // Spin timeline: hints build up based on total spin time, then vomit starts
-        if (isSpinning) {
-          spinHoldFrames++;
-
-          // Show hints at frame milestones
-          if (vomitHintIndex < vomitHints.length && spinHoldFrames >= HINT_AT_FRAME[vomitHintIndex]) {
-            showHint(vomitHints[vomitHintIndex], 0);
-            vomitHintIndex++;
-            // Last hint triggers vomit + party mode
-            if (vomitHintIndex >= vomitHints.length && !vomitReady) {
-              vomitReady = true;
-              partyMode = true;
-              hueOffset = 0;
-              hasReassembled = false;
-            }
-          }
-
-          // Only spew while held after "I'm gonna be sick"
-          if (vomitReady && avatarHeld) {
-            spewCooldown--;
-            if (spewCooldown <= 0) {
-              spewBlobs();
-              spewCooldown = SPEW_INTERVAL;
-            }
-          }
-        }
-
-        // Avatar spin physics: accelerate while held, decelerate on release
-        if (avatarHeld) {
-          spinSpeed = Math.min(spinSpeed + SPIN_ACCEL, SPIN_MAX);
-          spinAngle += spinSpeed;
-          avatarEl.style.transform = `rotate(${spinAngle}deg)`;
-        } else if (spinSpeed > 0.5) {
-          // Fast decel phase: just slow down
-          spinSpeed *= SPIN_DECEL;
-          spinAngle += spinSpeed;
-          avatarEl.style.transform = `rotate(${spinAngle}deg)`;
-        } else if (isSpinning) {
-          // Settle phase: spring toward nearest upright (multiple of 360)
-          const remainder = ((spinAngle % 360) + 360) % 360;
-          const target = remainder > 180
-            ? spinAngle + (360 - remainder)
-            : spinAngle - remainder;
-          const diff = target - spinAngle;
-          spinAngle += diff * 0.08;
-          avatarEl.style.transform = `rotate(${spinAngle}deg)`;
-          if (Math.abs(diff) < 0.5) {
-            spinAngle = target;
-            spinSpeed = 0;
-            isSpinning = false;
-            avatarEl.style.transform = "";
-            // Reset vomit timeline when spin fully stops
-            spinHoldFrames = 0;
-            vomitHintIndex = 0;
-            vomitReady = false;
-          }
-        }
-      }
-
-      function updateHue() {
-        if (partyMode) {
-          hueOffset += 0.005;
-          if (hueOffset > 1) hueOffset -= 1;
-        } else if (Math.abs(hueOffset) > 0.001) {
-          // Smoothly return to original hue via shortest path around the circle
-          if (hueOffset > 0.5) {
-            hueOffset += 0.008;
-            if (hueOffset > 1) hueOffset -= 1;
-          } else {
-            hueOffset *= 0.97;
-          }
-        } else {
-          hueOffset = 0;
-        }
-      }
-
-      function updateCursorTrail() {
-        if (mx !== null) {
-          if (cursorTrailX === null) { cursorTrailX = mx; cursorTrailY = my; }
-          cursorTrailX += (mx - cursorTrailX) * CURSOR_TRAIL_LAG;
-          cursorTrailY += (my - cursorTrailY) * CURSOR_TRAIL_LAG;
-        } else {
-          cursorTrailX = null;
-          cursorTrailY = null;
-        }
+        if (mx === null) { cursorLive = false; return; }
+        if (!cursorLive) { cur.x = trail.x = mx; cur.y = trail.y = my; cursorLive = true; }
+        cur.px = cur.x; cur.py = cur.y;
+        trail.px = trail.x; trail.py = trail.y;
+        // Speed per physics step, so it's smooth however often the mouse reports
+        const dx = mx - cur.x, dy = my - cur.y;
+        mouseSpeed = Math.max(Math.sqrt(dx * dx + dy * dy), mouseSpeed * MOUSE_SPEED_DECAY);
+        cur.x = mx; cur.y = my;
+        trail.x += (mx - trail.x) * CURSOR_TRAIL_LAG;
+        trail.y += (my - trail.y) * CURSOR_TRAIL_LAG;
       }
 
       function updateIdleTimeline() {
-        // Idle nudges → dance → go home
-        // Timeline (seconds idle): 15→hello?, 25→helloooo, 40→anyone there?,
-        // 50→start dancing, ~75→head home
+        // Idle nudges → dance → go home (seconds idle: 15, 25, 40 → dance at 50 → home ~25s later)
         if (!idleMode) {
           const idleFrames = time - lastInteractionTime;
           if (idleFrames === IDLE_NUDGE_FRAMES[0]) { showHint("hello?", 3); idleHinted = true; }
@@ -977,10 +639,8 @@
           if (idleFrames === IDLE_DANCE_START) {
             showHint("fine, I'll entertain myself");
             idleMode = true;
-            idleShapeIndex = 0;
-            prevIdleShapeIndex = 0;
-            idleShapeSwitchTime = time;
-            idleDanceStart = time;
+            idleShapeIndex = prevIdleShapeIndex = 0;
+            idleShapeSwitchTime = idleDanceStart = time;
           }
         }
 
@@ -989,211 +649,138 @@
           prevIdleShapeIndex = idleShapeIndex;
           idleShapeIndex = (idleShapeIndex + 1) % shapes.length;
           idleShapeSwitchTime = time;
-          for (let k = 0; k < blobs.length; k++) {
-            blobs[k].vx *= 0.3;
-            blobs[k].vy *= 0.3;
-          }
+          for (const b of blobs) { b.vx *= 0.3; b.vy *= 0.3; }
         }
 
         // Smoothly shrink blob radii during idle dance
-        const targetRadiusFactor = idleMode ? 0.0 : 1.0;
-        idleRadiusFactor += (targetRadiusFactor - idleRadiusFactor) * IDLE_RADIUS_LERP;
+        idleRadiusFactor += ((idleMode ? 0 : 1) - idleRadiusFactor) * IDLE_RADIUS_LERP;
         const idleR = IDLE_UNIFORM_R * viewScale;
         for (let k = 0; k < Math.min(ORIGINAL_COUNT, blobs.length); k++) {
           blobs[k].r = idleR + (originalRadii[k] - idleR) * idleRadiusFactor;
         }
       }
 
+      function pop() {
+        hasPopped = true;
+        popFrame = time;
+        blobs.forEach((b, i) => {
+          const angle = (i / blobs.length) * Math.PI * 2 + (Math.random() - 0.5) * 1.5;
+          const speed = 8 + Math.random() * 4;
+          b.vx = Math.cos(angle) * speed;
+          b.vy = Math.sin(angle) * speed;
+          b.freeFlying = true;
+        });
+        showHint("oh no! you popped my bubble", 0);
+        for (let i = 0; i < POP_BONUS_COUNT; i++) {
+          const angle = (i / POP_BONUS_COUNT) * Math.PI * 2;
+          const b = makeBlob(25, 35, W / 2, H / 2);
+          b.vx = Math.cos(angle) * 6;
+          b.vy = Math.sin(angle) * 6;
+          blobs.push(b);
+        }
+      }
+
+      function checkReassembled() {
+        const n = Math.min(ORIGINAL_COUNT, blobs.length);
+        let cx = 0, cy = 0;
+        for (let i = 0; i < n; i++) { cx += blobs[i].x / n; cy += blobs[i].y / n; }
+        for (let i = 0; i < n; i++) if (Math.hypot(blobs[i].x - cx, blobs[i].y - cy) > REASSEMBLE_RADIUS) return;
+        if (!idleMode) {
+          hasReassembled = true;
+          if (!reassembleHintShown) { reassembleHintShown = true; showHint("aw, you put it back :)", 1); }
+        } else if (blobs.length <= ORIGINAL_COUNT) {
+          hasReassembled = true;
+          if (!reassembleHintShown) { reassembleHintShown = true; showHint("ok bye", 3); }
+          idleMode = false;
+        }
+      }
+
+      // Soft gooey wall pushback: returns the spring force for one axis
+      const wallForce = (p, size, r) => p < r ? (r - p) / r * WALL_SPRING : p > size - r ? (size - r - p) / r * WALL_SPRING : 0;
+
       function updateBlobs() {
         // Pop: triggers on hover near center or click
-        if (!hasPopped) {
-          let shouldPop = false;
-          if (mx !== null) {
-            const dx = mx - W / 2;
-            const dy = my - H / 2;
-            if (Math.sqrt(dx * dx + dy * dy) < POP_RADIUS) shouldPop = true;
-          }
-          if (mouseDown) shouldPop = true;
-          if (shouldPop) {
-            hasPopped = true;
-            popFrame = time;
-            for (let i = 0; i < blobs.length; i++) {
-              const b = blobs[i];
-              const angle = (i / blobs.length) * Math.PI * 2 + (Math.random() - 0.5) * 1.5;
-              const speed = 8 + Math.random() * 4;
-              b.vx = Math.cos(angle) * speed;
-              b.vy = Math.sin(angle) * speed;
-              b.freeFlying = true;
-            }
-            showHint("oh no! you popped my bubble", 0);
+        if (!hasPopped && (mouseDown || (mx !== null && Math.hypot(mx - W / 2, my - H / 2) < POP_RADIUS))) pop();
+        if (hasPopped && !hasReassembled && time - popFrame > REASSEMBLE_DELAY) checkReassembled();
 
-            const cx = W / 2, cy = H / 2;
-            for (let i = 0; i < POP_BONUS_COUNT; i++) {
-              const angle = (i / POP_BONUS_COUNT) * Math.PI * 2;
-              const b = makeBlob(25, 35);
-              b.x = cx;
-              b.y = cy;
-              b.vx = Math.cos(angle) * 6;
-              b.vy = Math.sin(angle) * 6;
-              blobs.push(b);
-            }
-          }
-        }
-
-        // Reassemble detection
-        if (hasPopped && !hasReassembled && time - popFrame > REASSEMBLE_DELAY) {
-          let cx = 0, cy = 0;
-          const n = Math.min(ORIGINAL_COUNT, blobs.length);
-          for (let i = 0; i < n; i++) { cx += blobs[i].x; cy += blobs[i].y; }
-          cx /= n; cy /= n;
-          let allClose = true;
-          for (let i = 0; i < n; i++) {
-            const dx = blobs[i].x - cx, dy = blobs[i].y - cy;
-            if (Math.sqrt(dx * dx + dy * dy) > REASSEMBLE_RADIUS) { allClose = false; break; }
-          }
-          if (allClose) {
-            if (idleMode) {
-              if (blobs.length <= ORIGINAL_COUNT) {
-                hasReassembled = true;
-                if (!reassembleHintShown) { reassembleHintShown = true; showHint("ok bye", 3); }
-                idleMode = false;
-              }
-            } else {
-              hasReassembled = true;
-              if (!reassembleHintShown) { reassembleHintShown = true; showHint("aw, you put it back :)", 1); }
-            }
-          }
-        }
-
-        // Gradually fade extra blobs after reassembly (pause during vomit)
-        if (hasReassembled && !partyMode && blobs.length > ORIGINAL_COUNT) {
+        // Gradually fade extra blobs after reassembly
+        if (hasReassembled) {
           for (let j = blobs.length - 1; j >= ORIGINAL_COUNT; j--) {
-            blobs[j].r *= BLOB_FADE_RATE;
-            if (blobs[j].r < BLOB_FADE_MIN) {
-              blobs.splice(j, 1);
-            }
+            if ((blobs[j].r *= BLOB_FADE_RATE) < BLOB_FADE_MIN) blobs.splice(j, 1);
           }
         }
 
-        // Spring-animate cursor metaball radius
-        const targetRadius = (mouseDown ? CURSOR_R_CLICK : CURSOR_R_REST) * viewScale;
-        cursorRadiusVel += (targetRadius - cursorRadius) * CURSOR_SPRING_K;
-        cursorRadiusVel *= CURSOR_SPRING_DAMP;
-        cursorRadius += cursorRadiusVel;
+        const escaped = hasPopped && time - popFrame > 150;
+        const cx = W / 2, cy = H / 2;
+        const danceSec = (time - idleDanceStart) / 60;
+        const homeBlend = smoothstep01(hasPopped ? (danceSec - 25) / 5 : 0);
+        const shapeFade = smoothstep01((time - idleShapeSwitchTime) / IDLE_SHAPE_BLEND);
+        const shapeScale = Math.min(W, H) * 0.7;
+        const prevShape = shapes[prevIdleShapeIndex], curShape = shapes[idleShapeIndex];
 
-        // Per-blob physics loop
+        // Mouse force: push until popped + escaped, then suck (click repels on desktop)
+        let range = MOUSE_ATTRACT_RANGE, strength = -0.12 * (1 + mouseSpeed * 0.05);
+        if (!escaped) { range = MOUSE_PUSH_RANGE; strength = 0.3; }
+        else if (mouseDown && !isTouch) { range = MOUSE_REPEL_RANGE; strength = 0.7; }
+
         for (let i = 0; i < blobs.length; i++) {
           const b = blobs[i];
 
           // Idle formation steering
           if (idleMode) {
-            const danceSec = (time - idleDanceStart) / 60;
-            const homeBlend = smoothstep01(hasPopped ? (danceSec - 25) / 5 : 0);
-            const shapeFade = smoothstep01((time - idleShapeSwitchTime) / IDLE_SHAPE_BLEND);
-
-            const curShape = shapes[idleShapeIndex];
-            const prevShape = shapes[prevIdleShapeIndex];
-            const scale = Math.min(W, H) * 0.7;
-            const cx = W / 2, cy = H / 2;
-
             // Fade out extra blobs during go-home
-            if (homeBlend > 0 && i >= ORIGINAL_COUNT) {
-              b.r *= BLOB_FADE_RATE_GOHOME;
-              if (b.r < BLOB_FADE_MIN) {
-                blobs.splice(i, 1);
-                i--;
-                continue;
-              }
+            if (homeBlend > 0 && i >= ORIGINAL_COUNT && (b.r *= BLOB_FADE_RATE_GOHOME) < BLOB_FADE_MIN) {
+              blobs.splice(i--, 1);
+              continue;
             }
-
-            let tx, ty;
-            if (i < curShape.length) {
-              const prevX = cx + prevShape[i].x * scale;
-              const prevY = cy + prevShape[i].y * scale;
-              const curX = cx + curShape[i].x * scale;
-              const curY = cy + curShape[i].y * scale;
-              const shapeX = prevX + (curX - prevX) * shapeFade;
-              const shapeY = prevY + (curY - prevY) * shapeFade;
-              tx = shapeX + (cx - shapeX) * homeBlend;
-              ty = shapeY + (cy - shapeY) * homeBlend;
-              b.vx += (tx - b.x) * 0.003;
-              b.vy += (ty - b.y) * 0.003;
+            let tx, ty, k;
+            if (i < ORIGINAL_COUNT) {
+              const p = prevShape[i], q = curShape[i];
+              tx = cx + (p[0] + (q[0] - p[0]) * shapeFade) * shapeScale;
+              ty = cy + (p[1] + (q[1] - p[1]) * shapeFade) * shapeScale;
+              k = 0.003;
             } else {
-              const angle = time * 0.002 + i * 1.3;
-              const orbitR = Math.min(W, H) * 0.45;
-              const orbitX = cx + Math.cos(angle) * orbitR;
-              const orbitY = cy + Math.sin(angle) * orbitR;
-              tx = orbitX + (cx - orbitX) * homeBlend;
-              ty = orbitY + (cy - orbitY) * homeBlend;
-              b.vx += (tx - b.x) * 0.001;
-              b.vy += (ty - b.y) * 0.001;
+              const angle = time * 0.002 + i * 1.3, orbitR = Math.min(W, H) * 0.45;
+              tx = cx + Math.cos(angle) * orbitR;
+              ty = cy + Math.sin(angle) * orbitR;
+              k = 0.001;
             }
+            b.vx += (tx + (cx - tx) * homeBlend - b.x) * k;
+            b.vy += (ty + (cy - ty) * homeBlend - b.y) * k;
           }
 
-          // sinusoidal drift (slow, languid)
+          // Slow sinusoidal drift + buoyancy
           b.vx += Math.sin(time * b.freqX + b.phaseX) * 0.0002;
-          b.vy += Math.cos(time * b.freqY + b.phaseY) * 0.0002;
+          b.vy += Math.cos(time * b.freqY + b.phaseY) * 0.0002 + b.buoyancy;
 
-          // buoyancy
-          b.vy += b.buoyancy;
-
-          // blob-blob interactions (skip if either blob is free-flying)
-          for (let j = i + 1; j < blobs.length; j++) {
-            const o = blobs[j];
-            if (b.freeFlying || o.freeFlying) continue;
-            const dx = o.x - b.x;
-            const dy = o.y - b.y;
-            const distSq = dx * dx + dy * dy;
-            const combinedR = b.r + o.r;
-            const maxInteract = combinedR * 3.0;
-            if (distSq > maxInteract * maxInteract) continue;
-            const dist = Math.sqrt(distSq);
-
-            if (dist < 1) continue;
-
-            if (dist < combinedR * 0.5) {
-              const force = 0.003 * (1 - dist / (combinedR * 0.5));
-              const fx = (dx / dist) * force;
-              const fy = (dy / dist) * force;
-              b.vx -= fx; b.vy -= fy;
-              o.vx += fx; o.vy += fy;
-            } else if (dist < combinedR * 3.0) {
-              const force = 0.0012 * (dist - combinedR * 0.5) / (combinedR * 2.5);
-              const fx = (dx / dist) * force;
-              const fy = (dy / dist) * force;
+          // Blob-blob interactions: short-range repel, long-range attract (skip free-flying)
+          if (!b.freeFlying) {
+            for (let j = i + 1; j < blobs.length; j++) {
+              const o = blobs[j];
+              if (o.freeFlying) continue;
+              const dx = o.x - b.x, dy = o.y - b.y;
+              const combinedR = b.r + o.r;
+              const distSq = dx * dx + dy * dy;
+              if (distSq > 9 * combinedR * combinedR || distSq < 1) continue;
+              const dist = Math.sqrt(distSq);
+              const force = dist < combinedR * 0.5
+                ? -0.003 * (1 - dist / (combinedR * 0.5))
+                : 0.0012 * (dist - combinedR * 0.5) / (combinedR * 2.5);
+              const fx = dx / dist * force, fy = dy / dist * force;
               b.vx += fx; b.vy += fy;
               o.vx -= fx; o.vy -= fy;
             }
           }
 
-          // Mouse interaction — push until popped + escaped, then suck
           if (mx !== null && !b.freeFlying && !idleMode) {
-            const dx = b.x - mx;
-            const dy = b.y - my;
+            const dx = b.x - mx, dy = b.y - my;
             const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 50);
-            const escaped = hasPopped && time - popFrame > 150;
-
-            if (!escaped) {
-              if (dist < MOUSE_PUSH_RANGE) {
-                const taper = 1.0 - dist / MOUSE_PUSH_RANGE;
-                const force = taper * taper * 0.3;
-                b.vx += (dx / dist) * force;
-                b.vy += (dy / dist) * force;
-              }
-            } else if (mouseDown && !isTouch) {
-              if (dist < MOUSE_REPEL_RANGE) {
-                const taper = 1.0 - dist / MOUSE_REPEL_RANGE;
-                const force = taper * taper * 0.7;
-                b.vx += (dx / dist) * force;
-                b.vy += (dy / dist) * force;
-              }
-            } else if (dist < MOUSE_ATTRACT_RANGE) {
-              const speedMult = 1.0 + mouseSpeed * 0.05;
-              const taper = 1.0 - dist / MOUSE_ATTRACT_RANGE;
-              const force = taper * taper * 0.12 * speedMult;
-              b.vx -= (dx / dist) * force;
-              b.vy -= (dy / dist) * force;
-              if (dist < MOUSE_PROXIMITY_DAMP) {
+            if (dist < range) {
+              const taper = 1 - dist / range;
+              const force = taper * taper * strength;
+              b.vx += dx / dist * force;
+              b.vy += dy / dist * force;
+              if (strength < 0 && dist < MOUSE_PROXIMITY_DAMP) {
                 const damp = 0.92 + 0.06 * (dist / MOUSE_PROXIMITY_DAMP);
                 b.vx *= damp;
                 b.vy *= damp;
@@ -1201,49 +788,24 @@
             }
           }
 
-          // wall springs — soft gooey pushback
-          if (b.x < b.r) {
-            const pen = (b.r - b.x) / b.r;
-            b.vx += pen * WALL_SPRING;
-            b.vx *= WALL_DAMP;
-          }
-          if (b.x > W - b.r) {
-            const pen = (b.x - (W - b.r)) / b.r;
-            b.vx -= pen * WALL_SPRING;
-            b.vx *= WALL_DAMP;
-          }
-          if (b.y < b.r) {
-            const pen = (b.r - b.y) / b.r;
-            b.vy += pen * WALL_SPRING;
-            b.vy *= WALL_DAMP;
-          }
-          if (b.y > H - b.r) {
-            const pen = (b.y - (H - b.r)) / b.r;
-            b.vy -= pen * WALL_SPRING;
-            b.vy *= WALL_DAMP;
-          }
+          const wx = wallForce(b.x, W, b.r), wy = wallForce(b.y, H, b.r);
+          if (wx) b.vx = (b.vx + wx) * WALL_DAMP;
+          if (wy) b.vy = (b.vy + wy) * WALL_DAMP;
 
-          // damping
           b.vx *= DAMPING;
           b.vy *= DAMPING;
 
-          // clamp speed (free-flying blobs get a higher clamp to reach the wall)
+          // Clamp speed (free-flying blobs get a higher clamp to reach the wall)
           const clamp = b.freeFlying ? SPEED_CLAMP_FLYING : SPEED_CLAMP;
           const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-          if (speed > clamp) {
-            b.vx = (b.vx / speed) * clamp;
-            b.vy = (b.vy / speed) * clamp;
-          }
+          if (speed > clamp) { b.vx *= clamp / speed; b.vy *= clamp / speed; }
 
           b.x += b.vx;
           b.y += b.vy;
 
           // Free-flying blobs become normal on wall contact or when they lose momentum
-          if (b.freeFlying) {
-            const spd = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-            if (spd < SPEED_CLAMP || b.x <= b.r || b.x >= W - b.r || b.y <= b.r || b.y >= H - b.r) {
-              b.freeFlying = false;
-            }
+          if (b.freeFlying && (Math.min(speed, clamp) < SPEED_CLAMP || b.x <= b.r || b.x >= W - b.r || b.y <= b.r || b.y >= H - b.r)) {
+            b.freeFlying = false;
           }
 
           // Allow center past edge by up to half radius (wall smoosh)
@@ -1254,119 +816,93 @@
 
       function update() {
         time++;
-        mouseSpeed *= MOUSE_SPEED_DECAY;
-        updateAvatarSpin();
-        updateHue();
-        updateCursorTrail();
+        // Remember last positions (for render interpolation) and ease each blob's heat toward its speed
+        for (const b of blobs) {
+          b.px = b.x; b.py = b.y;
+          b.heat = b.heat * 0.94 + 0.06 * Math.min(Math.sqrt(b.vx * b.vx + b.vy * b.vy) / 8, 1);
+        }
+        updateCursor();
         updateIdleTimeline();
         updateBlobs();
       }
 
-      function draw() {
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        gl.uniform1f(uTime, time * 0.01);
-        gl.uniform1f(uHue, hueOffset);
+      let slot = 0;
+      function put(x, y, r, heat) {
+        if (r <= 0 || slot >= MAX_SLOTS) return;
+        const k = slot++ * 4;
+        blobData[k] = x * dpr;
+        blobData[k + 1] = (H - y) * dpr;
+        blobData[k + 2] = r * r * dpr * dpr;
+        blobData[k + 3] = heat;
+      }
 
-        let slot = 0;
-        const maxSlots = 64;
+      // Blend between the last two physics steps so motion is smooth at any refresh rate
+      const putLerp = (o, r, heat, alpha) => put(o.px + (o.x - o.px) * alpha, o.py + (o.y - o.py) * alpha, r, heat);
 
-        // Physics blobs
-        for (let i = 0; i < blobs.length && slot < maxSlots - 2; i++) {
-          gl.uniform3f(uBlobs[slot], blobs[i].x * dpr, (H - blobs[i].y) * dpr, blobs[i].r * dpr);
-          slot++;
+      function draw(alpha) {
+        slot = 0;
+        if (cursorLive) {
+          const heat = Math.min(mouseSpeed / 60, 1);
+          putLerp(cur, cursorRadius, heat, alpha);
+          // Trailing cursor for natural deformation when moving
+          putLerp(trail, cursorRadius * 0.55 * Math.min(mouseSpeed / 12, 1), heat, alpha);
         }
-
-        // Primary cursor metaball
-        if (mx !== null) {
-          gl.uniform3f(uBlobs[slot], mx * dpr, (H - my) * dpr, cursorRadius * dpr);
-        } else {
-          gl.uniform3f(uBlobs[slot], 0.0, 0.0, 0.0);
+        for (let i = 0; i < blobs.length; i++) putLerp(blobs[i], blobs[i].r, blobs[i].heat, alpha);
+        const blobPass = fieldPass || shade;
+        gl.useProgram(blobPass.prog);
+        gl.uniform1i(blobPass.u.u_count, slot);
+        gl.uniform4fv(blobPass.u.u_blobs, blobData);
+        if (fieldPass) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+          gl.viewport(0, 0, fieldW, fieldH);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          gl.useProgram(shade.prog);
         }
-        slot++;
-
-        // Trailing cursor for natural deformation when moving
-        if (mx !== null && cursorTrailX !== null) {
-          const stretch = Math.min(mouseSpeed / 12, 1.0);
-          const trailR = cursorRadius * 0.55 * stretch;
-          gl.uniform3f(uBlobs[slot], cursorTrailX * dpr, (H - cursorTrailY) * dpr, trailR * dpr);
-        } else {
-          gl.uniform3f(uBlobs[slot], 0.0, 0.0, 0.0);
-        }
-        slot++;
-
-        // Zero out remaining slots
-        while (slot < maxSlots) {
-          gl.uniform3f(uBlobs[slot], 0.0, 0.0, 0.0);
-          slot++;
-        }
-
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform1f(shade.u.u_time, time * 0.01);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
 
-      function loop() {
-        update();
-        draw();
+      // Fixed 60 Hz physics step (same speed on 120 Hz displays), rendered every frame
+      let last = performance.now(), acc = 0;
+      const hud = debug.has("fps") && document.body.appendChild(Object.assign(document.createElement("pre"), { style: "position:fixed;top:8px;left:8px;margin:0;font:12px monospace;color:#c4b5fd" }));
+      let hudFrames = 0, hudStart = 0, hudWorst = 0;
+      requestAnimationFrame(function loop(now) {
+        if (hud) {
+          hudWorst = Math.max(hudWorst, now - last);
+          if (++hudFrames, now - hudStart > 1000) {
+            hud.textContent = `${Math.round(hudFrames * 1000 / (now - hudStart))} fps  worst ${hudWorst.toFixed(1)} ms\n${canvas.width}×${canvas.height} @ ${dpr}x  ${slot} blobs`;
+            hudFrames = hudWorst = 0;
+            hudStart = now;
+          }
+        }
+        acc = Math.min(acc + now - last, 250);
+        last = now;
+        for (; acc >= STEP; acc -= STEP) update();
+        draw(acc / STEP);
         requestAnimationFrame(loop);
-      }
-      loop();
+      });
 
-      // --- Feature G: Return Visitor Memory ---
+      // --- Return visitor memory ---
       try {
-        let visits = parseInt(localStorage.getItem("murfalo_visits") || "0", 10);
-        visits++;
-        localStorage.setItem("murfalo_visits", visits.toString());
-        setTimeout(() => {
-          if (visits === 2) showHint("oh, you're back!", 3);
-          else if (visits === 3) showHint("you again?", 3);
-          else if (visits <= 5) showHint("at this point we're friends", 3);
-          else if (visits <= 9) showHint("ok you basically live here now", 3);
-          else if (visits < 25) showHint("welcome home :)", 3);
-          else showHint("visit #" + visits + ". you're dedicated", 3);
-        }, 5000);
+        const visits = +(localStorage.getItem("murfalo_visits") || 0) + 1;
+        localStorage.setItem("murfalo_visits", visits);
+        if (visits > 1) setTimeout(() => showHint(
+          visits === 2 ? "oh, you're back!"
+          : visits === 3 ? "you again?"
+          : visits <= 5 ? "at this point we're friends"
+          : visits <= 9 ? "ok you basically live here now"
+          : visits < 25 ? "welcome home :)"
+          : `visit #${visits}. you're dedicated`, 3), 5000);
       } catch (e) { /* localStorage unavailable */ }
 
-      // --- Random avatar hint ---
-      const avatarNudges = [
-        "psst... click my avatar",
-        "try clicking the dog",
-        "that avatar looks clickable...",
-        "go on, give the dog a spin",
-      ];
-      const nudgeDelay = (10 + Math.random() * 50) * 1000; // 10-60 seconds
-      setTimeout(() => {
-        if (!isSpinning && spewCount === 0) {
-          const pick = avatarNudges[Math.floor(Math.random() * avatarNudges.length)];
-          showHint(pick, 3);
-        }
-      }, nudgeDelay);
-
-      // --- Social link hover hints ---
-      const socialHints = {
-        "Email": "send me an email",
-        "GitHub": "explore my GitHub",
-        "Google Scholar": "read my research",
-        "PDB": "inspect my structures",
-        "LinkedIn": "connect on LinkedIn",
-        "Twitter": "follow me on X",
-        "Instagram": "peek at my Instagram",
-        "MyAnimeList": "お前はもう見ている",
-        "AOTY": "hear what I'm listening to",
-        "Letterboxd": "see what I'm watching",
-        "StoryGraph": "enjoy what I'm reading",
-      };
-      document.querySelectorAll("nav a").forEach(a => {
-        const hint = socialHints[a.getAttribute("aria-label")];
-        if (!hint) return;
-        a.addEventListener("mouseenter", () => showSocialHint(hint));
-        a.addEventListener("mouseleave", hideSocialHint);
-      });
     })();
 
     // --- PDB author search ---
     // Credited as author, or co-author with Aoki on the primary citation.
     (() => {
       const link = document.querySelector("a.pdb-link");
-      if (!link) return;
       const term = (attribute, value) => ({ type: "terminal", service: "text", parameters: { attribute, operator: "exact_match", value } });
       const query = { type: "group", logical_operator: "or", nodes: [
         term("audit_author.name", "Angelo, M.C."),
@@ -1375,25 +911,26 @@
           term("rcsb_primary_citation.rcsb_authors", "Aoki, S.T."),
         ] },
       ] };
-      link.href = "https://www.rcsb.org/search?request=" + encodeURIComponent(JSON.stringify({ query, return_type: "entry" }));
+      link.dataset.url = "https://www.rcsb.org/search?request=" + encodeURIComponent(JSON.stringify({ query, return_type: "entry" }));
     })();
+
+    // --- Clean link previews ---
+    // Links with data-url show their short href in the browser's hover status bar
+    // and swap in the real URL only when pressed (any click or Enter).
+    document.querySelectorAll("a[data-url]").forEach(a => {
+      const short = a.href, go = () => { a.href = a.dataset.url; };
+      a.addEventListener("pointerdown", go);
+      a.addEventListener("keydown", e => e.key === "Enter" && go());
+      a.addEventListener("mouseleave", () => { a.href = short; });
+    });
 
     // --- Email obfuscation ---
     // Address is assembled from char codes at click time so it never appears
     // as a harvestable string in the HTML source.
-    (() => {
-      const link = document.querySelector("a.email-link");
-      if (!link) return;
-      const build = () => {
-        const u = String.fromCharCode(115, 105, 116, 101);
-        const d = String.fromCharCode(109, 117, 114, 102, 97, 108, 111, 46, 99, 111, 109);
-        return "mailto:" + u + String.fromCharCode(64) + d;
-      };
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        window.location.href = build();
-      });
-    })();
+    document.querySelector("a.email-link").addEventListener("click", e => {
+      e.preventDefault();
+      location.href = "mailto:" + String.fromCharCode(115, 105, 116, 101, 64, 109, 117, 114, 102, 97, 108, 111, 46, 99, 111, 109);
+    });
   </script>
 </body>
 </html>
