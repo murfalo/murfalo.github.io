@@ -139,21 +139,6 @@
       fill: currentColor;
     }
 
-    .bubble-hint {
-      font-style: italic;
-      font-size: 1.14rem;
-      position: fixed;
-      bottom: 1.25rem;
-      inset-inline: 0;
-      text-align: center;
-      color: #f0e6ff;
-      text-shadow: 0 0 20px var(--color-neon), 0 0 40px var(--color-neon-deep), 0 0 80px var(--color-primary-glow);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-      will-change: opacity;
-    }
-    .bubble-hint.visible { opacity: 0.85; }
   </style>
 </head>
 <body>
@@ -166,67 +151,65 @@
 
     <nav aria-label="Social links">
       <!-- Email -->
-      <a href="mailto:" class="email-link" aria-label="Email" data-hint="send me an email">
+      <a href="mailto:" class="email-link" aria-label="Email">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 2-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
       </a>
 
       <!-- GitHub -->
-      <a href="https://github.com/murfalo" rel="me" aria-label="GitHub" data-hint="explore my GitHub">
+      <a href="https://github.com/murfalo" rel="me" aria-label="GitHub">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.866-.013-1.7-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.337-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
       </a>
 
       <!-- Google Scholar -->
-      <a href="https://scholar.google.com" data-url="https://scholar.google.com/citations?user=zC_z7igAAAAJ" aria-label="Google Scholar" data-hint="read my research">
+      <a href="https://scholar.google.com" data-url="https://scholar.google.com/citations?user=zC_z7igAAAAJ" aria-label="Google Scholar">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 24a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm0-2a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/><path d="m21.5 10-9.5-8-9.5 8h5.5v4h2v-4z"/></svg>
       </a>
 
       <!-- PDB -->
-      <a href="https://www.rcsb.org" class="pdb-link" aria-label="PDB" data-hint="inspect my structures">
+      <a href="https://www.rcsb.org" class="pdb-link" aria-label="PDB">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 6.5 18 6.5 12 17.5Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="6" cy="6.5" r="3.5"/><circle cx="18" cy="6.5" r="3.5"/><circle cx="12" cy="17.5" r="3.5"/></svg>
       </a>
 
       <!-- LinkedIn -->
-      <a href="https://www.linkedin.com/in/murfalo" rel="me" aria-label="LinkedIn" data-hint="connect on LinkedIn">
+      <a href="https://www.linkedin.com/in/murfalo" rel="me" aria-label="LinkedIn">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
       </a>
 
       <!-- Twitter / X -->
-      <a href="https://twitter.com/mvrfalo" rel="me" aria-label="Twitter" data-hint="follow me on X">
+      <a href="https://twitter.com/mvrfalo" rel="me" aria-label="Twitter">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
       </a>
 
       <!-- Instagram -->
-      <a href="https://instagram.com/mvrfalo" rel="me" aria-label="Instagram" data-hint="peek at my Instagram">
+      <a href="https://instagram.com/mvrfalo" rel="me" aria-label="Instagram">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
       </a>
     </nav>
 
     <nav aria-label="Media links">
       <!-- MyAnimeList -->
-      <a href="https://myanimelist.net/profile/murfalo" rel="me" aria-label="MyAnimeList" data-hint="お前はもう見ている">
+      <a href="https://myanimelist.net/profile/murfalo" rel="me" aria-label="MyAnimeList">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M14.921 6.479c-.82 0-3.683 0-4.947 3.156-.662 1.652-.986 4.812.876 7.886l1.934-1.41s-.767-1.095-1.083-3.191h2.897l.022 3.19h2.604V8.835h-2.581v2.043l-2.46-.023s.413-2.408 2.877-2.336h2.454l-.572-2.04ZM0 6.528v9.624h2.348v-5.84l2.031 2.664 2.047-2.652v5.828h2.336V6.528H6.437L4.368 9.474 2.31 6.528Zm18.447.022v9.583h5.022L24 14.09h-3.232V6.55Z"/></svg>
       </a>
 
       <!-- Album of the Year -->
-      <a href="https://www.albumoftheyear.org/user/murfalo" rel="me" aria-label="AOTY" data-hint="hear what I'm listening to">
+      <a href="https://www.albumoftheyear.org/user/murfalo" rel="me" aria-label="AOTY">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.598 7.849a.4.4 0 0 0-.182.188c-.034.074-.593 1.852-1.237 3.96L0 15.827l.142.142c.149.154.576.233.718.142.04-.028.194-.45.342-.929l.262-.877h3.009l.25.855c.143.467.297.888.348.923.245.193.81-.023.81-.308 0-.142-2.086-7.026-2.308-7.63-.057-.142-.143-.256-.234-.302-.17-.08-.575-.074-.74.006m1.009 3.539.61 2.062-1.231.017c-.673.006-1.237.006-1.248-.005-.029-.029 1.196-4.143 1.236-4.143.017 0 .302.929.633 2.069m4.826-3.442c-.7.182-1.19.621-1.447 1.288-.103.262-.109.467-.109 2.792s.006 2.53.109 2.792c.342.9 1.15 1.396 2.273 1.396 1.34 0 2.217-.638 2.433-1.767.074-.393.074-4.45 0-4.843-.216-1.145-1.105-1.772-2.473-1.76-.222 0-.575.045-.786.102m1.584.906c.32.165.57.467.678.82.126.433.126 4.274 0 4.707-.228.77-1.054 1.151-1.926.9-.427-.125-.69-.359-.837-.752-.109-.296-.114-.433-.114-2.501 0-2.052.005-2.211.114-2.496.142-.382.364-.593.752-.735.393-.137 1.003-.114 1.333.057m2.57-.912c-.131.148-.125.536.006.655.09.08.256.097 1.082.097h.98v7.288l.126.086c.216.153.666.096.797-.103.023-.034.046-1.687.046-3.67v-3.6h.991c.963 0 .998-.006 1.083-.126a.6.6 0 0 0 .091-.302.6.6 0 0 0-.091-.302l-.085-.125h-2.468c-2.319 0-2.473.005-2.558.102m5.829-.028a.7.7 0 0 0-.222.216c-.08.143-.04.222 1.15 2.45l1.237 2.302v1.51c0 .832.023 1.539.046 1.573.142.21.627.262.809.08.108-.108.114-.188.114-1.641V12.88l1.225-2.279C23.447 9.348 24 8.288 24 8.248c0-.046-.074-.154-.165-.245-.211-.21-.502-.228-.673-.04-.062.074-.547.974-1.07 2.011-.525 1.032-.975 1.904-.998 1.926-.023.029-.484-.82-1.026-1.88-.54-1.06-1.037-1.983-1.1-2.057-.13-.137-.336-.16-.552-.051"/></svg>
       </a>
 
       <!-- Letterboxd -->
-      <a href="https://letterboxd.com/murfalo" rel="me" aria-label="Letterboxd" data-hint="see what I'm watching">
+      <a href="https://letterboxd.com/murfalo" rel="me" aria-label="Letterboxd">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.224 14.352a4.447 4.447 0 0 1-3.775 2.092C1.992 16.444 0 14.454 0 12s1.992-4.444 4.45-4.444c1.592 0 2.988.836 3.774 2.092-.427.682-.673 1.488-.673 2.352s.246 1.67.673 2.352zM15.101 12c0-.864.247-1.67.674-2.352-.786-1.256-2.183-2.092-3.775-2.092s-2.989.836-3.775 2.092c.427.682.674 1.488.674 2.352s-.247 1.67-.674 2.352c.786 1.256 2.183 2.092 3.775 2.092s2.989-.836 3.775-2.092A4.42 4.42 0 0 1 15.1 12zm4.45-4.444a4.447 4.447 0 0 0-3.775 2.092c.427.682.673 1.488.673 2.352s-.246 1.67-.673 2.352a4.447 4.447 0 0 0 3.775 2.092C22.008 16.444 24 14.454 24 12s-1.992-4.444-4.45-4.444z"/></svg>
       </a>
 
       <!-- StoryGraph -->
-      <a href="https://app.thestorygraph.com/profile/murfalo" rel="me" aria-label="StoryGraph" data-hint="enjoy what I'm reading">
+      <a href="https://app.thestorygraph.com/profile/murfalo" rel="me" aria-label="StoryGraph">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18.1722.6246a.6788.6788 0 0 0-.1314.0252L14.095 1.818c-.3504.1039-.545.4673-.4413.8178l5.1137 17.3544c.104.3505.4673.5452.8178.4414l3.9455-1.1553c.3504-.1038.5451-.4673.4413-.8178L18.8584 1.0911a.6522.6522 0 0 0-.6862-.4665zM.662 1.0522c-.3634 0-.6619.2986-.6619.662v18.0944c0 .3634.2985.6619.662.6619h4.1143c.3634 0 .6619-.2985.6619-.662V1.7143c0-.3634-.2985-.662-.6619-.662zm6.9438 0c-.3634 0-.662.2986-.662.662v18.0944c0 .3634.2986.6619.662.6619H11.72c.3634 0 .649-.2985.662-.662V1.7143c0-.3634-.2986-.662-.662-.662zM.3634 21.431c-.1947 0-.3634.1558-.3634.3634v1.2202c0 .1948.1558.3635.3634.3635h23.2712c.1947 0 .3635-.1558.3635-.3635v-1.2202c0-.1947-.1557-.3634-.3635-.3634z"/></svg>
       </a>
     </nav>
   </main>
-  <p class="bubble-hint" id="bubble-hint"></p>
 
   <script>
-    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
     // --- Typewriter ---
@@ -236,7 +219,7 @@
         "equivalent exchange", "Terraria mods", "spaghetti code", "Boston accent",
         "final form", "stone world", "lore", "Gear 5", "Hunter license", "isekai arc",
         "evolutionary couplings", "MSAs", "crystal structures", "commits", "unread papers",
-        "snobby reviews", "cool stuff", "socials", "sludge", "slop", "drip"
+        "snobby reviews", "cool stuff", "socials", "sludge", "AI slop", "drip"
       ];
       const el = document.getElementById("typed");
       let queue = [];
@@ -257,7 +240,6 @@
       // Debug: ?fps shows a frame-time readout, ?scale=N overrides the render resolution
       const debug = new URLSearchParams(location.search);
       if (!gl) { console.warn("WebGL not available — lava lamp disabled"); return; }
-      const hintEl = document.getElementById("bubble-hint");
 
       // --- Constants (physics is tuned per 60 Hz tick) ---
       const STEP = 1000 / 60;
@@ -265,13 +247,6 @@
       const SPEED_CLAMP = 3.5;
       const SPEED_CLAMP_FLYING = 14;
       const DAMPING = 0.984;
-
-      const IDLE_UNIFORM_R = 25;
-      const IDLE_RADIUS_LERP = 0.03;
-      const IDLE_NUDGE_FRAMES = [900, 1500, 2400];
-      const IDLE_DANCE_START = 3000;
-      const IDLE_SHAPE_DURATION = 360;
-      const IDLE_SHAPE_BLEND = 120;
 
       const CURSOR_R_REST = 52;
       const CURSOR_R_CLICK = 90;
@@ -289,18 +264,12 @@
 
       const BLOB_FADE_RATE = 0.95;
       const BLOB_FADE_MIN = 2;
-      const BLOB_FADE_RATE_GOHOME = 0.97;
 
       const MOUSE_SPEED_DECAY = 0.9;
       const MOUSE_PUSH_RANGE = 400;
       const MOUSE_REPEL_RANGE = 900;
       const MOUSE_ATTRACT_RANGE = 600;
       const MOUSE_PROXIMITY_DAMP = 200;
-
-      const HINT_FADE_MS = 250;
-      const HINT_DISPLAY_MS = 2500;
-
-      const smoothstep01 = x => { const t = Math.min(Math.max(x, 0), 1); return t * t * (3 - 2 * t); };
 
       // --- State ---
       let W, H, dpr;
@@ -312,6 +281,7 @@
       let isTouch = false;
       let cursorRadius = CURSOR_R_REST;
       let cursorRadiusVel = 0;
+      let cursorRadiusPrev = CURSOR_R_REST; // previous step's radius, for interpolation
       // Cursor blob + its lagging trail, sampled each physics step (px/py = previous step, for interpolation)
       const cur = { x: 0, y: 0, px: 0, py: 0 }, trail = { x: 0, y: 0, px: 0, py: 0 };
       let cursorLive = false;
@@ -319,118 +289,39 @@
 
       // Animation time (in 60 Hz ticks)
       let time = 0;
-      let lastInteractionTime = 0;
 
       // Pop / reassemble
       let hasPopped = false;
       let popFrame = 0;
       let hasReassembled = false;
-      let reassembleHintShown = false;
-
-      // Idle
-      let idleMode = false;
-      let idleShapeIndex = 0;
-      let prevIdleShapeIndex = 0;
-      let idleShapeSwitchTime = 0;
-      let idleDanceStart = 0;
-      let idleRadiusFactor = 1.0;
-      let idleHinted = false;
 
       // Shake
       let lastShakeTime = 0;
 
-      // Idle formation shapes (normalized offsets from center, y-down screen coords)
-      const shapes = [
-        // Heart
-        [[0, -0.08], [-0.15, -0.22], [-0.27, -0.08], [-0.17, 0.1], [0, 0.27], [0.17, 0.1], [0.27, -0.08], [0.15, -0.22]],
-        // Letter M
-        [[-0.25, 0.2], [-0.25, -0.2], [-0.1, 0.02], [0, -0.12], [0.1, 0.02], [0.25, -0.2], [0.25, 0.2], [0, 0.2]],
-        // Smiley
-        [[-0.1, -0.12], [0.1, -0.12], [-0.2, 0.05], [-0.1, 0.16], [0, 0.19], [0.1, 0.16], [0.2, 0.05], [0, -0.25]],
-      ];
-
-      // --- Hints: priority queue (0 = top, 1 = high, 2 = normal, 3 = low; only shown when nothing else is) ---
-      let hintQueue = [], hintCur = null, hovering = false, hintTimer = 0;
-
-      function setHint(text) { hintEl.textContent = text; hintEl.classList.add("visible"); }
-
-      function hideHint() {
-        clearTimeout(hintTimer);
-        hintEl.classList.remove("visible");
-        if (hintCur) hintCur.pri = 99; // fading out: anything may replace it
-        hintTimer = setTimeout(() => { hintCur = null; nextHint(); }, HINT_FADE_MS);
-      }
-
-      function nextHint() {
-        if (hintCur || hovering || !hintQueue.length) return;
-        hintCur = hintQueue.shift();
-        setHint(hintCur.text);
-        hintTimer = setTimeout(hideHint, HINT_DISPLAY_MS);
-      }
-
-      function showHint(text, pri = 2) {
-        if (pri === 3 && (hintCur || hintQueue.length)) return;
-        if (pri === 0) hintQueue = hintQueue.filter(h => h.pri === 0);
-        hintQueue.push({ text, pri });
-        hintQueue.sort((a, b) => a.pri - b.pri);
-        if (!hintCur) nextHint();
-        else if (hintCur.pri !== 99 && hintQueue[0].pri <= hintCur.pri) hideHint();
-      }
-
-      // Link hover hints pre-empt the queue; an interrupted hint resumes afterwards
-      function hoverHint(text) {
-        clearTimeout(hintTimer);
-        if (hintCur && hintCur.pri !== 99) hintQueue.unshift(hintCur);
-        hintCur = null;
-        hovering = true;
-        const showing = parseFloat(getComputedStyle(hintEl).opacity) > 0.01;
-        hintEl.classList.remove("visible");
-        hintTimer = setTimeout(() => setHint(text), showing ? HINT_FADE_MS : 0);
-      }
-      function unhoverHint() { hovering = false; hideHint(); }
-
-      document.querySelectorAll("[data-hint]").forEach(a => {
-        const enter = () => hoverHint(a.dataset.hint);
-        a.addEventListener("mouseenter", enter);
-        a.addEventListener("focus", enter);
-        a.addEventListener("mouseleave", unhoverHint);
-        a.addEventListener("blur", unhoverHint);
-      });
-
       // --- Input (pointer events cover mouse, touch and pen) ---
-      const welcomeBacks = ["welcome back!", "oh hi!", "you're back!", "missed you :)", "whoa! didn't see you there", "act natural"];
-      function recordInteraction() {
-        lastInteractionTime = time;
-        if (idleHinted) { idleHinted = false; showHint(pick(welcomeBacks), 1); }
-        idleMode = false;
-      }
-
       function clearPointer() { mx = my = null; mouseSpeed = 0; }
 
       addEventListener("pointermove", e => {
         if (!e.isPrimary) return;
         mx = e.clientX; my = e.clientY;
-        recordInteraction();
       });
       addEventListener("pointerdown", e => {
         if (!e.isPrimary) return;
         isTouch = e.pointerType === "touch";
         // Touch: the cursor blob ploops into existence from nothing
-        if (isTouch && (mx === null || fingerLifted)) cursorRadius = cursorRadiusVel = 0;
+        if (isTouch && (mx === null || fingerLifted)) cursorRadius = cursorRadiusPrev = cursorRadiusVel = 0;
         fingerLifted = false;
         mouseDown = true;
         mx = e.clientX; my = e.clientY;
-        recordInteraction();
       });
       const release = () => {
         mouseDown = false;
         // Touch: a quick swell, then it ploops back out of existence
-        if (isTouch) { fingerLifted = true; cursorRadiusVel += 30 * viewScale; }
+        if (isTouch) { fingerLifted = true; cursorRadiusVel += 8 * viewScale; }
       };
       addEventListener("pointerup", release);
       addEventListener("pointercancel", release);
       document.documentElement.addEventListener("mouseleave", () => { mouseDown = false; clearPointer(); });
-      addEventListener("keydown", recordInteraction);
 
       // --- Shake to scatter (mobile) ---
       function handleMotion(e) {
@@ -438,13 +329,11 @@
         if (!acc || acc.x === null) return;
         if (Math.hypot(acc.x, acc.y, acc.z) > (e.acceleration ? 15 : 25) && Date.now() - lastShakeTime > 2000) {
           lastShakeTime = Date.now();
-          recordInteraction();
           for (const b of blobs) {
             const angle = Math.random() * Math.PI * 2, speed = 5 + Math.random() * 3;
             b.vx = Math.cos(angle) * speed;
             b.vy = Math.sin(angle) * speed;
           }
-          showHint("earthquake!");
         }
       }
       if (typeof DeviceMotionEvent !== "undefined") {
@@ -615,14 +504,14 @@
         const dist = (80 + Math.random() * 60) * viewScale;
         return makeBlob(i < 3 ? 90 : 49, i < 3 ? 128 : 83, W / 2 + Math.cos(angle) * dist, H / 2 + Math.sin(angle) * dist);
       });
-      const originalRadii = blobs.map(b => b.r);
 
       // --- Physics ---
       function updateCursor() {
         // Spring-animate cursor metaball radius
+        cursorRadiusPrev = cursorRadius;
         const targetRadius = fingerLifted ? 0 : (mouseDown ? CURSOR_R_CLICK : CURSOR_R_REST) * viewScale;
-        // Touch gets a bouncier spring so the blob overshoots a little as it appears
-        const k = isTouch ? 0.2 : CURSOR_SPRING_K, damp = isTouch ? 0.72 : CURSOR_SPRING_DAMP;
+        // Touch gets a softer spring so the blob eases in (slight overshoot) and out
+        const k = isTouch ? 0.07 : CURSOR_SPRING_K, damp = isTouch ? 0.72 : CURSOR_SPRING_DAMP;
         cursorRadiusVel = (cursorRadiusVel + (targetRadius - cursorRadius) * k) * damp;
         cursorRadius += cursorRadiusVel;
 
@@ -639,37 +528,6 @@
         trail.y += (my - trail.y) * CURSOR_TRAIL_LAG;
       }
 
-      function updateIdleTimeline() {
-        // Idle nudges → dance → go home (seconds idle: 15, 25, 40 → dance at 50 → home ~25s later)
-        if (!idleMode) {
-          const idleFrames = time - lastInteractionTime;
-          if (idleFrames === IDLE_NUDGE_FRAMES[0]) { showHint("hello?", 3); idleHinted = true; }
-          if (idleFrames === IDLE_NUDGE_FRAMES[1]) showHint("helloooo", 3);
-          if (idleFrames === IDLE_NUDGE_FRAMES[2]) showHint("anyone there?", 3);
-          if (idleFrames === IDLE_DANCE_START) {
-            showHint("fine, I'll entertain myself");
-            idleMode = true;
-            idleShapeIndex = prevIdleShapeIndex = 0;
-            idleShapeSwitchTime = idleDanceStart = time;
-          }
-        }
-
-        // Cycle idle shapes
-        if (idleMode && time - idleShapeSwitchTime > IDLE_SHAPE_DURATION) {
-          prevIdleShapeIndex = idleShapeIndex;
-          idleShapeIndex = (idleShapeIndex + 1) % shapes.length;
-          idleShapeSwitchTime = time;
-          for (const b of blobs) { b.vx *= 0.3; b.vy *= 0.3; }
-        }
-
-        // Smoothly shrink blob radii during idle dance
-        idleRadiusFactor += ((idleMode ? 0 : 1) - idleRadiusFactor) * IDLE_RADIUS_LERP;
-        const idleR = IDLE_UNIFORM_R * viewScale;
-        for (let k = 0; k < Math.min(ORIGINAL_COUNT, blobs.length); k++) {
-          blobs[k].r = idleR + (originalRadii[k] - idleR) * idleRadiusFactor;
-        }
-      }
-
       function pop() {
         hasPopped = true;
         popFrame = time;
@@ -680,7 +538,6 @@
           b.vy = Math.sin(angle) * speed;
           b.freeFlying = true;
         });
-        showHint("oh no! you popped my bubble", 0);
         for (let i = 0; i < POP_BONUS_COUNT; i++) {
           const angle = (i / POP_BONUS_COUNT) * Math.PI * 2;
           const b = makeBlob(25, 35, W / 2, H / 2);
@@ -695,14 +552,7 @@
         let cx = 0, cy = 0;
         for (let i = 0; i < n; i++) { cx += blobs[i].x / n; cy += blobs[i].y / n; }
         for (let i = 0; i < n; i++) if (Math.hypot(blobs[i].x - cx, blobs[i].y - cy) > REASSEMBLE_RADIUS) return;
-        if (!idleMode) {
-          hasReassembled = true;
-          if (!reassembleHintShown) { reassembleHintShown = true; showHint("aw, you put it back :)", 1); }
-        } else if (blobs.length <= ORIGINAL_COUNT) {
-          hasReassembled = true;
-          if (!reassembleHintShown) { reassembleHintShown = true; showHint("ok bye", 3); }
-          idleMode = false;
-        }
+        hasReassembled = true;
       }
 
       // Soft gooey wall pushback: returns the spring force for one axis
@@ -721,12 +571,6 @@
         }
 
         const escaped = hasPopped && time - popFrame > 150;
-        const cx = W / 2, cy = H / 2;
-        const danceSec = (time - idleDanceStart) / 60;
-        const homeBlend = smoothstep01(hasPopped ? (danceSec - 25) / 5 : 0);
-        const shapeFade = smoothstep01((time - idleShapeSwitchTime) / IDLE_SHAPE_BLEND);
-        const shapeScale = Math.min(W, H) * 0.7;
-        const prevShape = shapes[prevIdleShapeIndex], curShape = shapes[idleShapeIndex];
 
         // Mouse force: push until popped + escaped, then suck (click repels on desktop)
         let range = MOUSE_ATTRACT_RANGE, strength = -0.12 * (1 + mouseSpeed * 0.05);
@@ -735,29 +579,6 @@
 
         for (let i = 0; i < blobs.length; i++) {
           const b = blobs[i];
-
-          // Idle formation steering
-          if (idleMode) {
-            // Fade out extra blobs during go-home
-            if (homeBlend > 0 && i >= ORIGINAL_COUNT && (b.r *= BLOB_FADE_RATE_GOHOME) < BLOB_FADE_MIN) {
-              blobs.splice(i--, 1);
-              continue;
-            }
-            let tx, ty, k;
-            if (i < ORIGINAL_COUNT) {
-              const p = prevShape[i], q = curShape[i];
-              tx = cx + (p[0] + (q[0] - p[0]) * shapeFade) * shapeScale;
-              ty = cy + (p[1] + (q[1] - p[1]) * shapeFade) * shapeScale;
-              k = 0.003;
-            } else {
-              const angle = time * 0.002 + i * 1.3, orbitR = Math.min(W, H) * 0.45;
-              tx = cx + Math.cos(angle) * orbitR;
-              ty = cy + Math.sin(angle) * orbitR;
-              k = 0.001;
-            }
-            b.vx += (tx + (cx - tx) * homeBlend - b.x) * k;
-            b.vy += (ty + (cy - ty) * homeBlend - b.y) * k;
-          }
 
           // Slow sinusoidal drift + buoyancy
           b.vx += Math.sin(time * b.freqX + b.phaseX) * 0.0002;
@@ -782,7 +603,7 @@
             }
           }
 
-          if (mx !== null && !fingerLifted && !b.freeFlying && !idleMode) {
+          if (mx !== null && !fingerLifted && !b.freeFlying) {
             const dx = b.x - mx, dy = b.y - my;
             const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 50);
             if (dist < range) {
@@ -832,7 +653,6 @@
           b.heat = b.heat * 0.94 + 0.06 * Math.min(Math.sqrt(b.vx * b.vx + b.vy * b.vy) / 8, 1);
         }
         updateCursor();
-        updateIdleTimeline();
         updateBlobs();
       }
 
@@ -853,9 +673,10 @@
         slot = 0;
         if (cursorLive) {
           const heat = Math.min(mouseSpeed / 60, 1);
-          putLerp(cur, cursorRadius, heat, alpha);
+          const r = cursorRadiusPrev + (cursorRadius - cursorRadiusPrev) * alpha;
+          putLerp(cur, r, heat, alpha);
           // Trailing cursor for natural deformation when moving
-          putLerp(trail, cursorRadius * 0.55 * Math.min(mouseSpeed / 12, 1), heat, alpha);
+          putLerp(trail, r * 0.55 * Math.min(mouseSpeed / 12, 1), heat, alpha);
         }
         for (let i = 0; i < blobs.length; i++) putLerp(blobs[i], blobs[i].r, blobs[i].heat, alpha);
         const blobPass = fieldPass || shade;
@@ -893,19 +714,6 @@
         draw(acc / STEP);
         requestAnimationFrame(loop);
       });
-
-      // --- Return visitor memory ---
-      try {
-        const visits = +(localStorage.getItem("murfalo_visits") || 0) + 1;
-        localStorage.setItem("murfalo_visits", visits);
-        if (visits > 1) setTimeout(() => showHint(
-          visits === 2 ? "oh, you're back!"
-          : visits === 3 ? "you again?"
-          : visits <= 5 ? "at this point we're friends"
-          : visits <= 9 ? "ok you basically live here now"
-          : visits < 25 ? "welcome home :)"
-          : `visit #${visits}. you're dedicated`, 3), 5000);
-      } catch (e) { /* localStorage unavailable */ }
 
     })();
 

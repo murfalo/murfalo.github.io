@@ -26,17 +26,18 @@ Pushing to `main` triggers the GitHub Actions workflow (`.github/workflows/deplo
 
 ### Interactive Features (all inline JS in index.html)
 
-- **WebGL lava lamp** — metaball shader with 64 blob uniforms, DPR-aware canvas sizing, viewport-scaled radii
+- **WebGL lava lamp** — metaball field computed at half resolution into a half-float texture, then neon/CRT shading at full resolution (single-pass fallback); fixed 60 Hz physics with per-frame interpolation; viewport-scaled radii
+- **CRT look** — in-shader scanlines, vignette and a Bayer-dithered backdrop weave
 - **Typewriter** — cycles random words in the bio line
-- **Avatar spin + vomit orbs** — hold avatar to spin and spray blobs, triggers party mode (hue rotation)
 - **Pop / reassemble** — blobs scatter on first interaction, reassemble when gathered
-- **Idle dance** — after inactivity, blobs form shapes (heart, M, smiley) then return home
+- **Speed glow** — fast-moving blobs glow brighter/pinker
+- **Touch** — cursor blob ploops in on press and out on lift
 - **Shake to scatter** — DeviceMotion API on mobile
-- **Return visitor memory** — localStorage visit counter with escalating hints
+- **Debug** — `?fps` shows a frame-time readout, `?scale=N` overrides render resolution
 
 ## Styling Conventions
 
 All CSS is embedded in `index.html` using CSS variables for theming:
-- Dark theme (`--color-bg: #18181b`) with purple accent (`--color-primary: #8b5cf6`)
+- Dark theme (`--color-bg: #0e0c14`) with purple accent (`--color-primary: #8b5cf6`)
 - Modern CSS: flexbox, `100dvh`, CSS animations, custom properties
 - Responsive design with no media query breakpoints (fluid layout, viewport-scaled blob radii)
