@@ -522,13 +522,15 @@
           float interior = smoothstep(0.63, 0.67, field);
           float depth = mix(1.3, 0.8, smoothstep(0.65, 3.0, field)); // brighter rim, darker core
 
-          // Dithered backdrop: faint purple bloom toward the center, crushed to 2px Bayer dots
+          // Backdrop: one fixed 2px dot weave everywhere (constant pattern, so no banding),
+          // lit by a smooth purple bloom toward the center and the lamp glow rising from the bottom
           float th = bayer4(uv / (2.0 * u_dpr));
-          float bloom = 1.0 - length((uv - 0.5 * u_res) / u_res.y);
-          vec3 col = mix(vec3(0.055, 0.047, 0.078), vec3(0.11, 0.07, 0.17), step(th, bloom * 0.35));
-          // Lamp bulb: dithered glow rising from the bottom edge
+          float weave = step(th, 0.25);
+          float bloom = max(1.0 - length((uv - 0.5 * u_res) / u_res.y), 0.0);
           float heat = 1.0 - smoothstep(0.0, 1.0, uv.y / u_res.y);
-          col = mix(col, vec3(0.16, 0.06, 0.22), step(th, heat * heat * heat * 0.5));
+          float light = 0.5 * bloom + heat * heat * heat;
+          vec3 col = vec3(0.05, 0.045, 0.072) + vec3(0.05, 0.025, 0.09) * light;
+          col += vec3(0.03, 0.015, 0.05) * weave * (0.5 + light);
           col = mix(col, vec3(0.12, 0.06, 0.22), interior * 0.35 * depth);
           // Fast-moving wax runs hot: brighter, pinker rim that cools as it settles
           float h = clamp(f.y, 0.0, 1.0) * 0.3;
@@ -610,7 +612,7 @@
       // 3 large + 5 medium, starting in a ring around the center card
       const blobs = Array.from({ length: ORIGINAL_COUNT }, (_, i) => {
         const angle = (i / ORIGINAL_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
-        const dist = 80 + Math.random() * 60;
+        const dist = (80 + Math.random() * 60) * viewScale;
         return makeBlob(i < 3 ? 90 : 49, i < 3 ? 128 : 83, W / 2 + Math.cos(angle) * dist, H / 2 + Math.sin(angle) * dist);
       });
       const originalRadii = blobs.map(b => b.r);
