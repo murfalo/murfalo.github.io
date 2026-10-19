@@ -1,1 +1,6 @@
 .DS_Store
+node_modules
+/.svelte-kit
+/build
+vite.config.ts.timestamp-*
+.claude/settings.local.json
