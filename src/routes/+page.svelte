@@ -34,6 +34,29 @@
 		{ label: 'Social links', links: socials },
 		{ label: 'Media links', links: media }
 	];
+
+	// Link hover hint at the bottom of the screen. A hint that is still showing fades out before the next one fades in.
+	const HINT_FADE_MS = 250;
+	let hint = $state('');
+	let hintVisible = $state(false);
+	let hintEl: HTMLElement;
+	let hintTimer: ReturnType<typeof setTimeout>;
+	function showHint(text: string) {
+		clearTimeout(hintTimer);
+		const showing = parseFloat(getComputedStyle(hintEl).opacity) > 0.01;
+		hintVisible = false;
+		hintTimer = setTimeout(
+			() => {
+				hint = text;
+				hintVisible = true;
+			},
+			showing ? HINT_FADE_MS : 0
+		);
+	}
+	function hideHint() {
+		clearTimeout(hintTimer);
+		hintVisible = false;
+	}
 </script>
 
 <canvas class="lava" {@attach lavaLamp}></canvas>
@@ -53,13 +76,24 @@
 	{#each navs as nav (nav.label)}
 		<nav aria-label={nav.label}>
 			{#each nav.links as link (link.label)}
-				<a href={link.href} rel={link.me ? 'me' : undefined} aria-label={link.label} {@attach link.attach}>
+				<a
+					href={link.href}
+					rel={link.me ? 'me' : undefined}
+					aria-label={link.label}
+					onmouseenter={() => showHint(link.hint)}
+					onfocus={() => showHint(link.hint)}
+					onmouseleave={hideHint}
+					onblur={hideHint}
+					{@attach link.attach}
+				>
 					<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">{@html link.icon}</svg>
 				</a>
 			{/each}
 		</nav>
 	{/each}
 </main>
+
+<p class="hint" class:visible={hintVisible} bind:this={hintEl}>{hint}</p>
 
 <style>
 	:global {
@@ -77,6 +111,8 @@
 			--color-muted: #a1a1aa;
 			--color-primary: hsl(258deg 90% 66%);
 			--color-primary-glow: hsl(258deg 90% 66% / 0.4);
+			--color-neon: hsl(275deg 100% 70% / 0.8);
+			--color-neon-deep: hsl(268deg 68% 53%);
 			--color-pink: hsl(325deg 85% 72%);
 			--color-indigo: hsl(235deg 85% 72%);
 		}
@@ -192,5 +228,26 @@
 		width: 26px;
 		height: 26px;
 		fill: currentColor;
+	}
+
+	.hint {
+		font-style: italic;
+		font-size: 1.14rem;
+		position: fixed;
+		bottom: 1.25rem;
+		inset-inline: 0;
+		text-align: center;
+		color: #f0e6ff;
+		text-shadow:
+			0 0 20px var(--color-neon),
+			0 0 40px var(--color-neon-deep),
+			0 0 80px var(--color-primary-glow);
+		pointer-events: none;
+		opacity: 0;
+		transition: opacity 0.25s ease;
+		will-change: opacity;
+	}
+	.hint.visible {
+		opacity: 0.85;
 	}
 </style>
